@@ -32,3 +32,7 @@ README 默认使用英文，顶部提供中文文档切换；两种语言保持 
 这些检查保证发布交付包含可验证的升级路径；不承诺未知网络、未来平台或未来不兼容版本能无需干预运行。
 
 英文 README 与 docs/README.zh.md、使用指南 docs/USAGE.md 与 docs/USAGE.zh.md 必须保持命令、支持范围和升级步骤一致。中文入口放在 docs/ 下，兼容 0.4.2 更新器的已有文件清单规则；不要未经兼容验证新增根目录发布文件。
+
+## 项目展示与文档风格参考
+
+持续参考 [Magenta CLI](https://github.com/Minions-Land/Magenta-CLI) 的安装/更新信息结构，以及 [Levis](https://github.com/CatVinci-Studio/Levis) 的英文首页与语言切换设计。项目说明采用正式、简洁的措辞；安装与更新保持两个主要入口；中英文内容同步维护。参考项目用于指导表达与组织，不应据此宣称本项目具备尚未实现或验证的功能。

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "6c216e7b93c61f21dff923cc8590a7fe1c465141",
+  "sourceCommit": "07d47312fa2f18a16f0d4cab915868997f118d22",
   "sourceSubdirectory": "moodle-mcp",
   "dirty": false,
   "finalCandidate": true,
@@ -133,7 +133,7 @@
     },
     {
       "path": "docs/README.zh.md",
-      "sha256": "37df7dc85a8758403a130088c9b00f9213ac7faf7b2b306f96304ce6ce5e714c",
+      "sha256": "f871dda7fd6e97c4fcf99c5fe31ed561804b73b44f190a78dff412c60afc62d2",
       "mode": 420
     },
     {
@@ -148,7 +148,7 @@
     },
     {
       "path": "docs/RELEASE.md",
-      "sha256": "0475dcce6d85260ee3acf1697ca23cbcc9c07039c621927b3054f531f20615e9",
+      "sha256": "6ec2afb60ef86e65595e9765e1b55c73df6915b40a6aa202c815e89467e635c7",
       "mode": 420
     },
     {
@@ -178,7 +178,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "9a1b1b876b92df056d64e742220703245a31702ba7798d6038e005eef2865670",
+      "sha256": "1c9db913349b0466117e6e73da5b7aed1d998a853a49a165d6aa1fab7dfe51fc",
       "mode": 420
     },
     {

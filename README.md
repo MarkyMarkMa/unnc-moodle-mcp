@@ -92,6 +92,15 @@ Quick synchronization discovers new files but does not check remote changes to p
 
 The server reads only selected courses that your account can access. It does not submit assignments, send messages, or modify school content. Authentication uses a dedicated browser profile; passwords and MFA codes are entered by the user. Keep login sessions, downloaded materials, and personal course configuration out of public repositories.
 
+## Style references
+
+The following projects guide this project's documentation and presentation style:
+
+- [Magenta CLI](https://github.com/Minions-Land/Magenta-CLI): distinct Installation and Update sections, prominent commands, and actionable upgrade guidance.
+- [Levis](https://github.com/CatVinci-Studio/Levis): an English landing page with visible language switching, concise introductions, and consistent multilingual documentation.
+
+Future documentation changes should follow these conventions: formal, concise wording; two primary entry points for installation and updates; and equivalent English and Chinese instructions. Commands and support claims must reflect this project's verified implementation.
+
 ## License
 
 [MIT](LICENSE). The license covers this project's code, not university materials, branding, or third-party content.
