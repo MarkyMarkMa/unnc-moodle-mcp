@@ -2,13 +2,14 @@ import { constants } from 'node:fs';
 import { copyFile, link, unlink, rmdir, rename, readdir } from 'node:fs/promises';
 import { dirname, join, relative, parse } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { contained } from './platform.js';
 import type { Config } from './config.js';
 import { MoodleError, type Manifest, type RemoteFile, type StoredFile } from './model.js';
 import { fileHash, regularFile, safeDirectory, safeFilename } from './safety.js';
 
 export async function pruneEmpty(root: string, file: string): Promise<void> {
   let dir = dirname(file);
-  while (dir !== root && dir.startsWith(root + '/')) {
+  while (dir !== root && contained(root, dir)) {
     try { await rmdir(dir); } catch (e) {
       if (['ENOTEMPTY', 'EEXIST', 'ENOENT'].includes((e as NodeJS.ErrnoException).code ?? '')) return;
       throw e;
@@ -59,9 +60,9 @@ export async function publishLatest(cfg: Config, file: RemoteFile, state: Manife
   if (old && owned && dirname(old) === dir && record.readableFilename === latest.filename) destination = old;
   const stem = parse(latest.filename);
   for (let n = 2; ; n++) {
-    const existing = await regularFile(cfg.materialsDir, relative(cfg.materialsDir, destination));
+    const existing = await regularFile(cfg.materialsDir, relative(cfg.materialsDir, destination).split('\\').join('/'));
     const caseConflict = (await readdir(dir)).some(name => name.toLocaleLowerCase() === parse(destination).base.toLocaleLowerCase() && name !== parse(destination).base);
-    const claimed = caseConflict || Object.values(state.files).some(f => f.key !== file.key && f.readablePath?.toLocaleLowerCase() === relative(cfg.materialsDir, destination).toLocaleLowerCase());
+    const claimed = caseConflict || Object.values(state.files).some(f => f.key !== file.key && f.readablePath?.toLocaleLowerCase() === relative(cfg.materialsDir, destination).split('\\').join('/').toLocaleLowerCase());
     if (!claimed && (!existing || (owned && existing === old))) break;
     let prefix = stem.name;
     const suffix = ` (${n})${stem.ext}`;
@@ -84,7 +85,7 @@ export async function publishLatest(cfg: Config, file: RemoteFile, state: Manife
       await rename(temporary, destination);
     } else await link(temporary, destination);
     published = true;
-    const changed = { ...record, readablePath: relative(cfg.materialsDir, destination), readableHash: latest.sha256, readableFilename: latest.filename };
+    const changed = { ...record, readablePath: relative(cfg.materialsDir, destination).split('\\').join('/'), readableHash: latest.sha256, readableFilename: latest.filename };
     try { await commit(changed); }
     catch (e) {
       if (backedUp) { await rename(backup, destination); backedUp = false; }

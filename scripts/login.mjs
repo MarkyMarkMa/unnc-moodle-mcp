@@ -1,10 +1,10 @@
 import { chromium } from 'playwright';
 import { mkdir, chmod, writeFile, rename, lstat } from 'node:fs/promises';
-import { homedir } from 'node:os';
+import { applicationDirectory } from '../dist/src/platform.js';
 import { join, dirname, isAbsolute } from 'node:path';
 
 // This profile belongs only to this project; never copy a personal Chrome profile.
-const root = join(homedir(), 'Library', 'Application Support', 'moodle-mcp');
+const root = applicationDirectory();
 const profile = process.env.MOODLE_PROFILE_DIR ?? join(root, 'browser-profile');
 process.umask(0o077);
 if (!isAbsolute(profile)) throw new Error('Profile must be an absolute path');

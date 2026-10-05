@@ -1,6 +1,7 @@
 import { readFileSync, lstatSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { isAbsolute, join, resolve } from 'node:path';
+import { applicationDirectory, contained } from './platform.js';
 import { MoodleError, type SelectedCourse } from './model.js';
 
 export interface Config {
@@ -9,17 +10,17 @@ export interface Config {
   headless: boolean; requestIntervalMs: number; timeoutMs: number; maxBytes: number;
 }
 export function config(): Config {
-  const settingsFile = process.env.MOODLE_SETTINGS_FILE ?? join(homedir(), 'Library', 'Application Support', 'moodle-mcp', 'settings.json');
+  const settingsFile = process.env.MOODLE_SETTINGS_FILE ?? join(applicationDirectory(), 'settings.json');
   if (!isAbsolute(settingsFile)) throw new MoodleError('INVALID_INPUT');
   const settings = loadSettings(settingsFile);
   const dataDir = process.env.MOODLE_DATA_DIR ?? settings?.dataDir ?? join(homedir(), 'Documents', 'MoodleSync');
-  const profileDir = process.env.MOODLE_PROFILE_DIR ?? join(homedir(), 'Library', 'Application Support', 'moodle-mcp', 'browser-profile');
+  const profileDir = process.env.MOODLE_PROFILE_DIR ?? join(applicationDirectory(), 'browser-profile');
   const coursesFile = process.env.MOODLE_COURSES_FILE ?? (settings?.dataDir === resolve(dataDir) ? settings.coursesFile : undefined) ?? join(dataDir, 'courses.json');
   if (![dataDir, profileDir, coursesFile, settingsFile].every(isAbsolute)) throw new MoodleError('INVALID_INPUT');
-  if (resolve(settingsFile) === resolve(coursesFile)) throw new MoodleError('INVALID_INPUT');
+  if (contained(settingsFile, coursesFile) && contained(coursesFile, settingsFile)) throw new MoodleError('INVALID_INPUT');
   const reservedDirectories = [profileDir, join(dataDir, 'materials'), join(dataDir, 'state')].map(p => resolve(p));
-  if ([settingsFile, coursesFile].some(p => reservedDirectories.some(root => resolve(p) === root || resolve(p).startsWith(root + '/')))) throw new MoodleError('INVALID_INPUT');
-  if (resolve(dataDir) === resolve(profileDir) || resolve(profileDir).startsWith(resolve(dataDir) + '/')) throw new MoodleError('INVALID_INPUT');
+  if ([settingsFile, coursesFile].some(p => reservedDirectories.some(root => contained(root, p)))) throw new MoodleError('INVALID_INPUT');
+  if (contained(dataDir, profileDir)) throw new MoodleError('INVALID_INPUT');
   return { settingsFile, setupConfirmed: settings?.dataDir === resolve(dataDir) && settings?.coursesFile === resolve(coursesFile), courses: loadCourses(coursesFile), coursesFile, dataDir, profileDir, materialsDir: join(dataDir, 'materials'), stateDir: join(dataDir, 'state'),
     headless: process.env.MOODLE_HEADLESS !== 'false', requestIntervalMs: 1500, timeoutMs: 30000, maxBytes: 100 * 1024 * 1024 };
 }

@@ -36,3 +36,5 @@ README 默认使用英文，顶部提供中文文档切换；两种语言保持 
 ## 项目展示与文档风格参考
 
 持续参考 [Magenta CLI](https://github.com/Minions-Land/Magenta-CLI) 的安装/更新信息结构，以及 [Levis](https://github.com/CatVinci-Studio/Levis) 的英文首页与语言切换设计。项目说明采用正式、简洁的措辞；安装与更新保持两个主要入口；中英文内容同步维护。参考项目用于指导表达与组织，不应据此宣称本项目具备尚未实现或验证的功能。
+
+Windows 实验性预发布仍使用与 package.json 一致的数字版本号，并设置 GitHub Pre-release 标志。正文必须说明真实 Windows 验证状态、setup.cmd 入口和手动升级限制。现有 macOS 更新器会选择数字预发布版，不得宣称现有用户不会收到该更新。Windows 自动升级不属于本次支持范围。

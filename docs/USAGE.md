@@ -105,3 +105,5 @@ Maintainer verification has included real course discovery, downloads, and reorg
 ## References
 
 [MCP SDK](https://modelcontextprotocol.io/docs/sdk) · [Playwright](https://playwright.dev/docs/api/class-browsertype#browser-type-launch-persistent-context) · [Codex MCP](https://developers.openai.com/codex/mcp)
+
+Windows adaptations are experimental; see the [Windows guide](../README.md#windows-experimental). Automatic updating is macOS-only; on Windows use a separate new program directory and preserve settings/materials.

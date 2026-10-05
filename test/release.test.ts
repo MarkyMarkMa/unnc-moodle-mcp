@@ -69,7 +69,7 @@ test('source archives without Git receive explicit maintenance-checkout guidance
   const { source, destination } = await fixture(t); await rm(join(source, '.git'), { recursive: true });
   await assert.rejects(exportPublic(source, destination), /Git maintenance checkout/);
 });
-test('launcher executable permission survives export', async t => {
+test('launcher executable permission survives export', { skip: process.platform === 'win32' }, async t => {
   const { source, destination, git } = await fixture(t); await chmod(join(source, 'scripts/setup.command'), 0o755);
   git('add', '.'); git('-c', 'user.name=Release test', '-c', 'user.email=test@example.invalid', 'commit', '-qm', 'Executable launcher');
   await exportPublic(source, destination);

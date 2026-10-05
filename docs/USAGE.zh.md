@@ -130,3 +130,5 @@ NEEDS_LOGIN 时停止操作，运行 `npm run login` 亲自认证。关闭异常
 MIT 许可只覆盖本项目代码，不授予学校课件、品牌或第三方内容的权利。
 
 参考：[MCP SDK](https://modelcontextprotocol.io/docs/sdk)、[Playwright](https://playwright.dev/docs/api/class-browsertype#browser-type-launch-persistent-context)、[Codex MCP](https://developers.openai.com/codex/mcp)。
+
+Windows + Chrome 为实验性适配，安装与路径见[项目说明](../README.md#windows-experimental)。自动升级仍仅适用于 macOS；Windows 使用新程序目录手动升级并保留配置及资料。

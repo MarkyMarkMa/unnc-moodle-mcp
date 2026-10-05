@@ -23,7 +23,8 @@ async function fixture(t: TestContext) {
  for(const [p,s]of Object.entries(contents)){await mkdir(join(source,p,'..'),{recursive:true});await writeFile(join(source,p),s);}
  const provenance={schemaVersion:1,dirty:false,finalCandidate:true,files:Object.entries(contents).map(([path,s])=>({path,sha256:hash(s),mode:0o644}))};
  await writeFile(join(source,'release-source.json'),JSON.stringify(provenance));
- const archive=join(root,'release.zip');execFileSync('/usr/bin/zip',['-qr',archive,'unnc-moodle-mcp'],{cwd:root});
+ const archive=join(root,'release.zip');if (process.platform === 'darwin') execFileSync('/usr/bin/zip',['-qr',archive,'unnc-moodle-mcp'],{cwd:root});
+ else await writeFile(archive, 'Unused archive for platform-independent rollback test');
  const bytes=await readFile(archive);
  const release={tag_name:'v0.4.2',draft:false,prerelease:true,assets:[{name:'unnc-moodle-mcp-v0.4.2.zip',digest:'sha256:'+hash(bytes),browser_download_url:'https://github.com/MarkyMarkMa/unnc-moodle-mcp/releases/download/v0.4.2/unnc-moodle-mcp-v0.4.2.zip'}]};
  const fetcher=async(url:string)=>new Response(url.includes('api.github.com')?JSON.stringify([release]):bytes);
@@ -39,7 +40,7 @@ test('release selection includes numbered prereleases and never downgrades',()=>
  assert.equal(chooseRelease([{tag_name:'v0.4.2',draft:false}],'0.4.2'),undefined);
  assert.throws(()=>checkedFiles({schemaVersion:1,dirty:false,finalCandidate:true,files:[{path:'src/../../outside',sha256:'a'.repeat(64),mode:0o644}]}),/Unsafe/);
 });
-test('ZIP update keeps installation path, settings and personal materials; saves previous program',async t=>{
+test('ZIP update keeps installation path, settings and personal materials; saves previous program',{skip:process.platform !== 'darwin'},async t=>{
  const f=await fixture(t);const result=await update(f.target,{fetcher:f.fetcher,run:f.run,acquire:async()=>async()=>{},log:()=>{}});
  assert.equal(result.version,'0.4.2');assert.equal(JSON.parse(await readFile(join(f.target,'package.json'),'utf8')).version,'0.4.2');
  assert.equal(await readFile(join(f.target,'materials/notes.pdf'),'utf8'),'personal notes');
@@ -49,7 +50,7 @@ test('ZIP update keeps installation path, settings and personal materials; saves
  assert.ok(!(await readdir(f.target)).includes('.moodle-update-lock'));
  const again=await update(f.target,{fetcher:f.fetcher,run:f.run,acquire:async()=>async()=>{},log:()=>{}});assert.equal(again.updated,false);
 });
-test('checksum, download and build failures leave installed version intact and release update lock',async t=>{
+test('checksum, download and build failures leave installed version intact and release update lock',{skip:process.platform !== 'darwin'},async t=>{
  for(const mode of ['digest','network','build']){
   const f=await fixture(t);
   if(mode==='digest')f.release.assets[0]!.digest='sha256:'+'0'.repeat(64);
@@ -70,7 +71,7 @@ test('failed replacement rolls back every moved entry and preserves unrelated fi
  assert.equal(await readFile(join(target,'src/old.ts'),'utf8'),'old');assert.equal(JSON.parse(await readFile(join(target,'package.json'),'utf8')).version,'0.4.1');
  assert.equal(await readFile(join(target,'courses.json'),'utf8'),'personal selection');
 });
-test('symlink destinations and occupied updater lock stop before replacing code',async t=>{
+test('symlink destinations and occupied updater lock stop before replacing code',{skip:process.platform !== 'darwin'},async t=>{
  const f=await fixture(t);await symlink(f.root,join(f.target,'src'));
  await assert.rejects(update(f.target,{fetcher:f.fetcher,run:f.run,acquire:async()=>async()=>{},log:()=>{}}),/symlink/);
  assert.equal(JSON.parse(await readFile(join(f.target,'package.json'),'utf8')).version,'0.4.1');

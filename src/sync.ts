@@ -23,7 +23,7 @@ export class SyncEngine {
       for (const [key, f] of Object.entries(state.files)) {
         if (key !== f.key || !Number.isSafeInteger(f.courseId) || f.courseId <= 0) throw new Error();
         for (const v of f.versions) inside(this.cfg.materialsDir, v.relativePath);
-        if (f.readablePath) { inside(this.cfg.materialsDir, f.readablePath); if (f.readablePath.startsWith('.history/')) throw new MoodleError('STATE_INVALID'); }
+        if (f.readablePath) { inside(this.cfg.materialsDir, f.readablePath); if (f.readablePath.replaceAll('\\', '/').startsWith('.history/')) throw new MoodleError('STATE_INVALID'); }
       }
       return state;
     } catch (e) {
@@ -86,7 +86,7 @@ export class SyncEngine {
       const now = new Date().toISOString();
       const record: StoredFile = { ...(old ?? {}), key: file.key, courseId: file.courseId, moduleId: file.moduleId, remotePath: file.remotePath, title: file.title,
         etag: downloaded.etag, lastModified: downloaded.lastModified, mime: downloaded.mime, present: true, lastCheckedAt: now,
-        versions: [...(old?.versions ?? []), { version: number, relativePath: relative(this.cfg.materialsDir, destination), filename, sha256: downloaded.sha256, bytes: downloaded.bytes, savedAt: now }] };
+        versions: [...(old?.versions ?? []), { version: number, relativePath: relative(this.cfg.materialsDir, destination).split('\\').join('/'), filename, sha256: downloaded.sha256, bytes: downloaded.bytes, savedAt: now }] };
       try { await this.commitRecord(file.key, record, state); }
       catch (e) { await unlink(destination); throw e; }
       (old ? summary.updated : summary.added).push({ key: file.key, path: destination, attempts: downloaded.attempts });
@@ -99,9 +99,9 @@ export class SyncEngine {
     let record: StoredFile = initial;
     for (let i = 0; i < record.versions.length; i++) {
       const version = record.versions[i]!;
-      if (version.relativePath.startsWith('.history/')) {
+      if (version.relativePath.replaceAll('\\', '/').startsWith('.history/')) {
         const legacyPath = version.relativePath.slice('.history/'.length);
-        const legacy = /^\d+\/\d+\//.test(legacyPath) ? await regularFile(this.cfg.materialsDir, legacyPath) : undefined;
+        const legacy = /^\d+[\\/]\d+[\\/]/.test(legacyPath) ? await regularFile(this.cfg.materialsDir, legacyPath) : undefined;
         const archived = await regularFile(this.cfg.materialsDir, version.relativePath);
         if (legacy && archived && await fileHash(legacy) === await fileHash(archived)) {
           await unlink(legacy); await pruneEmpty(this.cfg.materialsDir, legacy);

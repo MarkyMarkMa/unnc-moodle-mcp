@@ -15,14 +15,14 @@
 
 下载已选课程的资料，按课程与 Moodle 分区组织，并通过 Codex 执行增量同步。历史版本与本地批注均予以保留。
 
-**运行环境：** macOS、Google Chrome、[Node.js 24+](https://nodejs.org/)。本项目为面向 UNNC / Nottingham Moodle 的非官方工具，仅支持手动同步；Windows 与其他 Moodle 站点尚未验证。
+**运行环境：** macOS、Google Chrome、[Node.js 24+](https://nodejs.org/)。本项目为面向 UNNC / Nottingham Moodle 的非官方工具，仅支持手动同步；Windows + Chrome 已加入实验性适配，仍待真实验证；其他 Moodle 站点尚未验证。
 
 <a id="installation"></a>
 
 ## 安装
 
 1. 从 [Releases](https://github.com/MarkyMarkMa/unnc-moodle-mcp/releases) 下载版本号最高的 ZIP 附件，解压至固定的程序目录。
-2. 打开 `scripts/setup.command`。安装入口检查运行环境，经确认后安装依赖、编译服务并启动设置向导。
+2. macOS 打开 `scripts/setup.command`；Windows 打开 `scripts/setup.cmd`（实验性）。安装入口检查运行环境，经确认后安装依赖、编译服务并启动设置向导。
 3. 在专用浏览器中登录 Moodle、完成 MFA，选择课程并确认资料保存目录。
 4. 按[接入 Codex](#接入-codex)完成配置，随后重启 Codex。
 
@@ -104,3 +104,7 @@ npm run codex-config
 ## 许可证
 
 [MIT](../LICENSE)。许可证仅覆盖本项目代码，不授予学校课件、品牌或第三方内容的使用权。
+
+## Windows（实验性）
+
+Windows 安装、配置目录、权限与手动升级说明见[项目说明](../README.md#windows-experimental)。尚未完成真实 Windows 验证，不能承诺完整支持；自动升级仍仅适用于 macOS。

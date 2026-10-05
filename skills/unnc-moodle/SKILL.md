@@ -7,7 +7,7 @@ description: 在 Codex 中设置和使用 UNNC Moodle 资料同步 MCP，包括�
 
 ## 未接入
 
-先定位用户下载的公开项目和 README。项目提供 `scripts/setup.command`（macOS 双击入口）、`npm run setup` 和 `npm run doctor`。安装需要 Node.js 24+ 和 Google Chrome。说明将安装项目依赖；用户已授权安装时继续，否则确认。按 README 生成/填写 Codex 的 MCP 配置，修改全局配置前说明具体改动并保留现有配置。skill 本身不安装 MCP、不授权全局配置变更。
+先定位用户下载的公开项目和 README。项目提供 `scripts/setup.command`（macOS 双击入口）、`scripts/setup.cmd`（Windows 实验性入口）、`npm run setup` 和 `npm run doctor`。安装需要 Node.js 24+ 和 Google Chrome。说明将安装项目依赖；用户已授权安装时继续，否则确认。按 README 生成/填写 Codex 的 MCP 配置，修改全局配置前说明具体改动并保留现有配置。skill 本身不安装 MCP、不授权全局配置变更。
 
 ## 程序更新
 
@@ -35,4 +35,4 @@ description: 在 Codex 中设置和使用 UNNC Moodle 资料同步 MCP，包括�
 
 ## 范围
 
-只支持 UNNC 的 Nottingham Moodle、macOS + Chrome。标准 stdio 接入可供其他客户端评估，但不要宣称未验证的客户端、其他学校或平台已经兼容。不创建用户未要求的定时任务。
+已验证 UNNC 的 Nottingham Moodle、macOS + Chrome；Windows + Chrome 有实验性适配但尚待真实验证，不宣称完整支持。Windows 暂用手动升级，不运行仅支持 macOS 的自动升级。标准 stdio 接入可供其他客户端评估，但不要宣称未验证的客户端、其他学校或平台已经兼容。不创建用户未要求的定时任务。
