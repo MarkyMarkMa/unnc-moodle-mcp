@@ -21,6 +21,8 @@ description: 在 Codex 中设置和使用 UNNC Moodle 资料同步 MCP，包括�
 
 展示已选名称、当前资料根目录（materials 的上级目录）、保留旧版本、仅手动同步。用户确认这些设置后调用 `confirm_setup`，传当前根目录和 `confirmed: true`。用户已经明确批准相同设置时不要重复确认。工具强制检查设置与名单；不能仅因 skill 已加载就假定设置完成。
 
+0.4.5 管理文件位于与 materials 并列的可见 _moodle：课程名单为 _moodle/courses.json，状态为 _moodle/state。升级前停止旧 MCP/CLI；首次启动迁移旧管理文件，不移动课件。外部名单/显式覆盖保持原位；冲突或中断标记须按使用指南恢复，不能删除 manifest 强行重试。
+
 更换根目录使用 `npm run setup`，不把改路径说成迁移；迁移旧资料按 README 停止进程、备份和整体复制。CLI 改配置后重启现有 MCP，并回读设置。MCP `select_courses`/`confirm_setup` 更新当前进程，不要求为了换名单重启。
 
 新增课程时先调用 list_courses 展示未选择课程，由用户明确选择后调用 select_courses 的 mode: add，保留现有名单；用户给出课程名称时先解析真实ID，不猜测，不自动批准所有新课程。

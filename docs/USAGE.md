@@ -39,23 +39,30 @@ MoodleSync/
       Moodle section/
         Lecture.pdf
     .history/
-  state/
-  courses.json
+  _moodle/
+    state/
+    courses.json
 ```
 
 Folder resources retain their published name and nested paths. Unnamed sections use `General`. Course names come from the approved course list; section names come from Moodle. Names are not automatically translated or classified.
 
 The readable copy shows the current version, while history retains previous versions. Readable files are independent of history: copy-on-write is used where available, otherwise a full copy consumes additional space. Duplicate names receive readable numeric suffixes. Local edits are preserved, and remote content is saved separately when necessary. Remote removal or deselection does not delete local files.
 
-Organize mode migrates recorded numeric directories into `.history` and updates the manifest. Empty old directories are removed. Interrupted migration can be rerun. Termination between publishing a readable file and committing its state may leave an unrecorded copy; the next run conservatively creates a separate file rather than deleting it. Back up `materials` and `state` before reorganizing important data.
+Organize mode migrates recorded numeric directories into `.history` and updates the manifest. Empty old directories are removed. Interrupted migration can be rerun. Termination between publishing a readable file and committing its state may leave an unrecorded copy; the next run conservatively creates a separate file rather than deleting it. Back up `materials` and `_moodle` before reorganizing important data.
 
 To view the materials directory in Finder, copy the path returned by `get_sync_settings` into **⌘⇧G**.
 
+### Management directory upgrade
+
+Before upgrading to 0.4.5, stop all older MCP and CLI processes on macOS and Windows. On first startup the server moves root-level `state`, default `courses.json`, and directories named `升级备份-YYYYMMDD-HHMMSS` into the visible `_moodle` directory. It updates the saved default course path and retains confirmation. Materials, history and annotations stay in place; no Moodle requests or redownloads are needed. Explicit `MOODLE_COURSES_FILE` overrides and external course files are not relocated. Unrecognized user folders are left alone. Program updater backups remain at the path printed by the updater.
+
+Existing destination entries, symlinks, operation locks or a `.moodle-storage.lock` marker stop migration rather than merging or overwriting data. Ordinary move/settings-write failures roll back moved entries. Power loss or termination may leave a partial migration and the marker: preserve and back up both layouts, stop every MCP/CLI/updater, restore each moved entry to its original root location only when that location is absent, and restore the saved course path if necessary. If both locations contain an entry, do not overwrite either; compare them before recovery. Remove the marker only after the complete old layout is restored, then restart to retry. Never delete the manifest to bypass a conflict. A completed migration is safe to start again.
+
 ### Moving the data directory
 
-Changing the configured directory does not migrate files. Stop MCP and CLI operations, back up the old directory, and copy `materials`, `state`, and `courses.json` together to the new directory. Retain the original copy, run setup to confirm the new location, restart MCP, and read back settings. Do not move only course files and omit their manifest. Automatic data-directory migration has not been implemented or verified against real materials.
+Changing the configured directory does not migrate files. Stop MCP and CLI operations, back up the old directory, and copy `materials` and `_moodle` together (or legacy `materials`, `state`, and `courses.json`) to the new directory. Retain the original copy, run setup to confirm the new location, restart MCP, and read back settings. Do not move only course files and omit their manifest. Automatic data-directory migration has not been implemented or verified against real materials.
 
-Absolute environment variables can override settings: `MOODLE_DATA_DIR`, `MOODLE_COURSES_FILE`, `MOODLE_SETTINGS_FILE`, and `MOODLE_PROFILE_DIR`. CLI and MCP must use consistent overrides. Course and settings JSON files cannot be placed inside materials, state, or the browser profile, or point to the same file. A changed data directory or course configuration path requires confirmation. `MOODLE_HEADLESS=false` displays browser automation windows.
+Absolute environment variables can override settings: `MOODLE_DATA_DIR`, `MOODLE_COURSES_FILE`, `MOODLE_SETTINGS_FILE`, and `MOODLE_PROFILE_DIR`. CLI and MCP must use consistent overrides. Course and settings JSON files cannot be placed inside materials, either state directory, or the browser profile, or point to the same file. A changed data directory or course configuration path requires confirmation. `MOODLE_HEADLESS=false` displays browser automation windows.
 
 ## Tools
 
@@ -83,6 +90,7 @@ Inspect `failed`, `skipped`, `needsLogin`, and `stoppedReason` in the operation 
 | `RATE_LIMITED` | Stop the batch and retry later; do not immediately loop. |
 | `PROFILE_BUSY` | Check the dedicated browser and other processes; the code does not prove which process caused the failure. |
 | `LOCAL_IO` | Check disk space, permissions, and local paths. |
+| `STORAGE_CONFLICT` | Preserve both layouts and follow management-directory recovery above. |
 | `STATE_INVALID` | Preserve the manifest and history; do not reset them to force a retry. |
 | `PARSE_FAILED` | Report the unsupported page structure rather than guessing a download URL. |
 

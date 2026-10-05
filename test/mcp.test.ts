@@ -35,3 +35,27 @@ test('official MCP client discovers tools and invokes actual server with validat
     assert.equal(denied.isError, true); assert.match(JSON.stringify(denied), /INVALID_INPUT/);
   } finally { await client.close(); }
 });
+
+test('stdio startup migrates legacy storage and reports preserved confirmation with new paths', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'moodle-migrated-client-')); t.after(() => rm(root, { recursive: true, force: true }));
+  const { mkdir, readFile } = await import('node:fs/promises');
+  await mkdir(join(root, 'state')); await mkdir(join(root, 'materials'));
+  await writeFile(join(root, 'state', 'manifest.json'), '{"schemaVersion":1,"files":{}}');
+  await writeFile(join(root, 'materials', 'note.txt'), 'personal note');
+  await writeFile(join(root, 'courses.json'), '[{"id":808,"name":"Example course"}]');
+  const settingsFile = join(root, 'settings.json');
+  await writeFile(settingsFile, JSON.stringify({ schemaVersion: 1, confirmed: true, dataDir: root, coursesFile: join(root, 'courses.json') }));
+  const env = { ...Object.fromEntries(Object.entries(process.env).filter((x): x is [string, string] => x[1] !== undefined)), MOODLE_DATA_DIR: root, MOODLE_SETTINGS_FILE: settingsFile };
+  delete (env as Record<string, string>).MOODLE_COURSES_FILE;
+  const client = new Client({ name: 'migration-test-client', version: '0.1.0' });
+  try {
+    await client.connect(new StdioClientTransport({ command: process.execPath, env, args: [fileURLToPath(new URL('../src/server.js', import.meta.url))] }));
+    assert.equal((await client.listTools()).tools.length, 8);
+    const response = await client.callTool({ name: 'get_sync_settings', arguments: {} });
+    assert.equal(response.isError, undefined);
+    const settings = JSON.parse((response.content as Array<{text:string}>)[0]!.text);
+    assert.equal(settings.setupConfirmed, true); assert.equal(settings.readyToSync, true);
+    assert.equal(settings.coursesFile, join(root, '_moodle', 'courses.json')); assert.equal(settings.directories.state, join(root, '_moodle', 'state'));
+    assert.equal(await readFile(join(root, 'materials', 'note.txt'), 'utf8'), 'personal note');
+  } finally { await client.close(); }
+});

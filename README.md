@@ -51,9 +51,9 @@ npm run update
 
 The updater downloads the newest published release, installs dependencies, and builds it before replacing the existing program. The installation path, settings, login session, and downloaded materials are retained. A failed replacement rolls back to the previous program.
 
-Reconnect the Moodle MCP server or restart Codex after updating. Then continue synchronization in Codex.
+Stop all old Moodle MCP/CLI processes before updating. On first startup, version 0.4.5 moves legacy management files into `_moodle` beside `materials`; see [storage migration and recovery](docs/USAGE.md#management-directory-upgrade). Reconnect the Moodle MCP server or restart Codex after updating. Then continue synchronization in Codex.
 
-**Reinstalling older versions:** if `npm run update` is unavailable or the installed version cannot be upgraded directly, stop the old MCP server and reinstall using the installation steps above. Preserve the materials directory, `state`, `courses.json`, and existing settings; remove only the program files. If program and data share a directory, back up the data separately before removing it. Use the previous program path where possible; otherwise update the MCP configuration to the new path. Existing materials do not need to be downloaded again.
+**Reinstalling older versions:** if `npm run update` is unavailable or the installed version cannot be upgraded directly, stop the old MCP server and reinstall using the installation steps above. Preserve the materials directory, `_moodle` (or legacy `state` and `courses.json`), and existing settings; remove only the program files. If program and data share a directory, back up the data separately before removing it. Use the previous program path where possible; otherwise update the MCP configuration to the new path. Existing materials do not need to be downloaded again.
 
 The updater supports ZIP installations. Git checkouts must be updated through Git. Published prereleases are included in version selection; drafts are excluded. Network failures should be retried after connectivity is restored.
 
@@ -80,7 +80,7 @@ Restart Codex, then check `get_sync_settings` and `check_connection`. Downloads 
 | Organize existing downloads | “Organize my existing Moodle materials without downloading them again.” |
 | Add a course | “Show my Moodle courses so I can select another course to synchronize.” |
 
-Files appear under `materials/Course name/Moodle section/Filename`. Historical versions are stored in `materials/.history`. No teaching categories are inferred or translated. Annotated files and personal notes are retained.
+The data root normally contains `materials` and `_moodle`. Course configuration, sync state and recognized legacy upgrade backups live in `_moodle`, which stays visible for recovery on both macOS and Windows. Files appear under `materials/Course name/Moodle section/Filename`. Historical versions are stored in `materials/.history`. No teaching categories are inferred or translated. Annotated files and personal notes are retained.
 
 Quick synchronization discovers new files but does not check remote changes to previously recorded files. Full synchronization checks updates. Organize mode refreshes the local folder layout without downloading materials. Additional courses require your approval.
 

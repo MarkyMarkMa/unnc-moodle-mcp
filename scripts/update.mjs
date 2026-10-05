@@ -36,11 +36,15 @@ export function checkedFiles(provenance) {
 }
 async function exists(path) { try { return await lstat(path); } catch (e) { if (e.code === 'ENOENT') return; throw e; } }
 async function json(path) { return JSON.parse(await readFile(path, 'utf8')); }
-async function dataLockPath() {
+export async function dataLockPath() {
   const settingsPath = process.env.MOODLE_SETTINGS_FILE ?? join(homedir(), 'Library/Application Support/moodle-mcp/settings.json');
   const settings = await exists(settingsPath) ? await json(settingsPath) : undefined;
   const data = process.env.MOODLE_DATA_DIR ?? settings?.dataDir ?? join(homedir(), 'Documents/MoodleSync');
-  return join(data, 'state/operation.lock');
+  if (await exists(join(data, '.moodle-storage.lock'))) throw new Error('Storage migration interrupted or active. Preserve both layouts and follow the recovery guide.');
+  const legacy = join(data, 'state/operation.lock');
+  const current = join(data, '_moodle/state/operation.lock');
+  if (await exists(legacy) || await exists(current)) throw new Error('Moodle operation in progress. Wait for it to finish, then retry update.');
+  return await exists(join(data, '_moodle/state')) ? current : legacy;
 }
 async function checkIdle() {
   if (await exists(await dataLockPath())) throw new Error('Moodle operation in progress. Wait for it to finish, then retry update.');

@@ -3,7 +3,7 @@ export interface SelectedCourse { id: number; name: string; }
 
 export type ErrorCode = 'NEEDS_LOGIN' | 'FORBIDDEN' | 'NOT_FOUND' | 'NETWORK' | 'RATE_LIMITED' |
   'EXTERNAL_LINK' | 'UNSUPPORTED' | 'PARSE_FAILED' | 'PROFILE_BUSY' | 'BUSY' |
-  'PATH_UNSAFE' | 'FILE_TOO_LARGE' | 'INVALID_INPUT' | 'STATE_INVALID' | 'LOCAL_IO' | 'INTERNAL' | 'SETUP_REQUIRED';
+  'PATH_UNSAFE' | 'FILE_TOO_LARGE' | 'INVALID_INPUT' | 'STATE_INVALID' | 'LOCAL_IO' | 'INTERNAL' | 'SETUP_REQUIRED' | 'STORAGE_CONFLICT';
 const messages: Record<ErrorCode, string> = {
   NEEDS_LOGIN: '专用会话未登录或已过期，请运行 npm run login 亲自重新认证。',
   FORBIDDEN: '账户没有访问该资源的权限。', NOT_FOUND: '远端资源已不存在。',
@@ -17,6 +17,7 @@ const messages: Record<ErrorCode, string> = {
   SETUP_REQUIRED: '请运行 npm run setup，确认本地目录与课程名单后再下载或同步。',
   LOCAL_IO: '本地文件操作失败；请检查磁盘空间和访问权限后再调用。',
   INTERNAL: '内部操作失败；请检查程序或联系维护者。',
+  STORAGE_CONFLICT: '管理目录迁移存在冲突或恢复未完成；请保留原目录与 _moodle，关闭旧 MCP 后按使用指南恢复。',
   STATE_INVALID: '同步状态损坏或结构不合法；已停止，未覆盖原状态。',
 };
 export type ErrorStage = 'discovery' | 'download' | 'commit' | 'local' | 'cleanup';

@@ -11,3 +11,6 @@ moodle-session.json*
 materials/
 state/
 verification/
+
+_moodle/
+.moodle-storage.lock

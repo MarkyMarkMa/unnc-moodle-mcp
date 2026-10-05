@@ -46,7 +46,7 @@ npm run update
 
 这条命令从本项目 GitHub 下载并执行更新脚本。更新器自动选择最高版本号的已发布版本（包括标记为 prerelease 的公开版本，不含草稿），校验 GitHub ZIP digest 与公开源码清单，在临时目录安装依赖和编译成功后才替换原位置的程序。不修改全局 Codex 配置、独立安装的 skill、课程名单、登录会话或资料；不会自动下载课件。原安装路径保留，通常无需改 MCP 配置。Git checkout 拒绝自动替换，请通过 Git 更新并重新安装/编译。
 
-替换时禁止并发 Moodle 操作；正在同步时会停止更新，完成后重试。旧程序保留在终端打印的 `previous` 备份目录，替换失败自动回滚。强制结束进程或断电不保证自动恢复：保留 `.moodle-update-*` 目录与 `update.json`，核对其中的原安装路径和备份，恢复后再处理 `.moodle-update-lock` 和资料目录中的 `state/operation.lock`；不要在另一个更新或同步仍运行时删除锁。依赖安装失败不动旧程序。
+替换时禁止并发 Moodle 操作；正在同步时会停止更新，完成后重试。旧程序保留在终端打印的 `previous` 备份目录，替换失败自动回滚。强制结束进程或断电不保证自动恢复：保留 `.moodle-update-*` 目录与 `update.json`，核对其中的原安装路径和备份，恢复后再处理 `.moodle-update-lock` 和资料目录中的 `_moodle/state/operation.lock`（旧版为 `state/operation.lock`）；不要在另一个更新或同步仍运行时删除锁。依赖安装失败不动旧程序。
 
 更新完成后重新连接 Moodle MCP 或重启 Codex，然后直接说：
 
@@ -77,18 +77,24 @@ npm run update
 
 - `materials/`：日常资料，按 `英文课程名/Moodle 原始分区/文件名` 保存；Moodle 文件夹保留名称与内部子目录。未命名分区使用 `General`。
 - `materials/.history/`：内部历史版本，资源 ID 与版本号只在这里出现。
-- `state/`：增量状态、临时文件及操作锁。
-- `courses.json`：课程白名单。
+- `_moodle/state/`：增量状态、临时文件及操作锁。
+- `_moodle/courses.json`：课程白名单。
 
 用 Finder 的 **⌘⇧G** 粘贴 `get_sync_settings` 中的 materials 路径查看。正常浏览无需进入 `.history`。同名文件用 `(2)` 等可读后缀区分，课程名采用已选课程名单中的名称；不会自动翻译课程或分区。内容校验不代替 Git 源码版本管理。
 
 老师更新后，可读位置自动更新；旧版本留在 `.history`。可读文件与历史独立，macOS 支持时使用 copy-on-write，否则复制会占用额外空间。用户修改过的课件不会覆盖，远端最新版另存带后缀的文件；自行添加的笔记同样保留。分区改名时仅移动程序管理且未修改的可读文件。远端移除资料时本地仍保留。
 
-升级到 0.4.1 后，运行 `npm run organize`（或 `sync_courses` 的 `mode: "organize"`）只读取课程/文件夹目录、整理已经下载的文件，不下载课件。旧编号目录逐文件迁入 `.history`，同步状态同时更新，空旧目录清理；中断后可重跑；若进程恰在可读文件发布与状态提交之间退出，可能留下未登记副本，下次会保守另存，避免误删用户文件。完整同步与快速同步也自动维护布局。整理需已有登录与确认设置，建议先备份 `materials` 和 `state`。
+升级到 0.4.1 后，运行 `npm run organize`（或 `sync_courses` 的 `mode: "organize"`）只读取课程/文件夹目录、整理已经下载的文件，不下载课件。旧编号目录逐文件迁入 `.history`，同步状态同时更新，空旧目录清理；中断后可重跑；若进程恰在可读文件发布与状态提交之间退出，可能留下未登记副本，下次会保守另存，避免误删用户文件。完整同步与快速同步也自动维护布局。整理需已有登录与确认设置，建议先备份 `materials` 和 `_moodle`。
 
-绝对路径环境变量可覆盖：`MOODLE_DATA_DIR`、`MOODLE_COURSES_FILE`、`MOODLE_SETTINGS_FILE`、`MOODLE_PROFILE_DIR`。名单与设置必须是各自专用的 JSON 文件，不能放入 materials、state 或浏览器 profile 内，不能指向同一文件。环境变量优先于持久设置；CLI 与 MCP 应使用一致的覆盖值。改变根目录或名单文件路径会要求重新确认，不能直接把旧确认用于新位置。`MOODLE_HEADLESS=false` 显示操作窗口。
+绝对路径环境变量可覆盖：`MOODLE_DATA_DIR`、`MOODLE_COURSES_FILE`、`MOODLE_SETTINGS_FILE`、`MOODLE_PROFILE_DIR`。名单与设置必须是各自专用的 JSON 文件，不能放入 materials、新旧 state 或浏览器 profile 内，不能指向同一文件。环境变量优先于持久设置；CLI 与 MCP 应使用一致的覆盖值。改变根目录或名单文件路径会要求重新确认，不能直接把旧确认用于新位置。`MOODLE_HEADLESS=false` 显示操作窗口。
 
-**改根目录不等于自动迁移。** 要保留旧历史：停止 MCP/CLI、备份旧根目录，将 materials、state、courses.json 整体复制到一个新目录，保留旧目录，运行 setup 确认新根目录，重启 MCP 并回读设置。不要只复制课件而漏掉 manifest；不要在同步运行时迁移。项目没有自动迁移命令，未执行真实资料迁移测试。
+### 管理目录升级
+
+macOS 和 Windows 升级到 0.4.5 前均须停止所有旧 MCP/CLI 进程。新版首次启动把根目录的 `state`、默认 `courses.json` 和名称符合 `升级备份-YYYYMMDD-HHMMSS` 的目录收进可见的 `_moodle`。同时更新持久设置中的默认课程路径，保留确认状态。materials、历史版本和批注留在原位；不访问 Moodle、不重新下载。显式 `MOODLE_COURSES_FILE` 覆盖及外部课程文件保持原路径，其他用户目录不移动。更新器的程序备份仍在其打印的位置。
+
+目标存在同名条目、符号链接、操作锁或 `.moodle-storage.lock` 标记时停止，不合并、不覆盖。普通移动或设置写入失败会回滚已移动条目。断电或强制终止可能留下部分迁移与标记：保留并备份新旧目录，停止全部 MCP/CLI/更新器；仅在原位置不存在时将已移动条目恢复到原根目录，必要时恢复设置中的课程路径。两边都有同名条目时不要覆盖，先核对内容。完整恢复旧布局后才能移除标记，再重启重试。不要删除 manifest 来绕过冲突。完成后的布局可重复启动。
+
+**改根目录不等于自动迁移。** 要保留旧历史：停止 MCP/CLI、备份旧根目录，将 materials 和 _moodle（旧版为 materials、state、courses.json）整体复制到一个新目录，保留旧目录，运行 setup 确认新根目录，重启 MCP 并回读设置。不要只复制课件而漏掉 manifest；不要在同步运行时迁移。项目没有跨根目录自动迁移命令，未执行真实资料迁移测试。
 
 从旧版本升级按[首页更新说明](README.zh.md#update)操作。已有课程名单、资料和确认设置继续保留；仅在 `get_sync_settings` 显示未确认时核对原目录与课程后确认，不重复要求已设置用户跑完整首次向导。不要为升级重新下载全部资料，不要上传自己的数据目录。
 

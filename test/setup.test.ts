@@ -65,7 +65,7 @@ test('confirmed custom root and external course file survive restart; root overr
   assert.equal(restarted.courses[0].id, 808);
   const other = join(root, 'other-data');
   const changed = JSON.parse(execFileSync(process.execPath, ['--input-type=module', '-e', script], { env: { ...env, MOODLE_DATA_DIR: other }, encoding: 'utf8' }));
-  assert.equal(changed.setupConfirmed, false); assert.equal(changed.coursesFile, join(other, 'courses.json')); assert.deepEqual(changed.courses, []);
+  assert.equal(changed.setupConfirmed, false); assert.equal(changed.coursesFile, join(other, '_moodle', 'courses.json')); assert.deepEqual(changed.courses, []);
   for (const reserved of [join(data, 'state', 'manifest.json'), join(data, 'materials', 'config.json')]) {
     assert.throws(() => execFileSync(process.execPath, ['--input-type=module', '-e', script], { env: { ...env, MOODLE_COURSES_FILE: reserved }, stdio: 'pipe' }));
   }
