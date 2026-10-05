@@ -4,10 +4,47 @@
 
 **支持范围：UNNC 使用的 Nottingham Moodle、macOS + Google Chrome、Node.js 24+。** 非官方项目。只读访问学校数据，第一版仅手动同步。Windows、Edge、其他学校和其他 agent 客户端尚未验证。
 
+## 从这里开始：安装或更新
+
+| 你的情况 | 最短操作 |
+|---|---|
+| 第一次使用 | 打开 [发布下载页](https://github.com/MarkyMarkMa/unnc-moodle-mcp/releases)，下载版本号最高的发布版附件 `unnc-moodle-mcp-v版本号.zip`，解压后双击 `scripts/setup.command`，按[新手开始](#新手开始)接入 Codex。 |
+| 已安装 0.4.2 或更新版本 | 在**原程序目录**运行 `npm run update`，然后重新连接 MCP 或重启 Codex。 |
+| 已安装 0.4.1 或更早版本 | 使用下方[旧版首次升级](#旧版首次升级只需一次)命令，不需要重新下载和解压。 |
+| 已经更新，想继续使用 | 在 Codex 中说：“检查 Moodle 登录和设置，然后同步我已选择的课程。” |
+
+**程序更新和课件同步是两件事。** 更新命令保留原安装路径、课程名单、登录会话和已有课件；完成后由 Codex 处理同步或目录整理。已经用过的用户不用为了更新重新选课，也不用重新下载全部课件。首次使用仍需安装 Node.js/Chrome、本人登录和选择课程；已有用户更新后需重新连接 MCP，让新版生效。
+
+发布下载页包含公开预发布版；按版本号选择最高版本即可，不使用 GitHub 的 `/releases/latest` 跳转（它可能跳过预发布版）。ZIP 安装更新器也按同一规则获取最高版本。无需每次复制带版本号的新下载地址。
+
+### 旧版首次升级（只需一次）
+
+在终端打开**原来的 Moodle MCP 程序目录**——里面有 `package.json`，不是存放课件的 `materials` 文件夹——粘贴运行：
+
+```sh
+(set -o pipefail; curl -fsSL https://raw.githubusercontent.com/MarkyMarkMa/unnc-moodle-mcp/main/scripts/update.mjs | node --input-type=module - --install-dir "$PWD")
+```
+
+此命令从本仓库下载并执行更新脚本，自动安装最新版到原位置。之后每次更新只需：
+
+```sh
+npm run update
+```
+
+不知道程序目录在哪里时，可以把[本仓库链接](https://github.com/MarkyMarkMa/unnc-moodle-mcp)交给 Codex，并说：
+
+> 请按仓库 README 帮我更新已安装的 Moodle MCP。先定位现有安装目录，保留原设置、登录和资料，不重新选课或修改其他 MCP 配置。更新后告诉我如何重新连接。
+
+更新并重新连接后，需要将旧编号目录整理成英文目录时，在 Codex 中说：
+
+> 检查 Moodle 登录和设置，把已有资料整理成新版英文目录，不重新下载。
+
+如果提示登录过期，由你在专用窗口完成登录/MFA，Codex 再继续。Git clone 安装的开发者请通过 Git 更新，ZIP 更新器不会覆盖 Git checkout。
+
 ## 新手开始
 
 1. 安装 [Node.js 24 或更新版本](https://nodejs.org/)（包含 npm）与 Google Chrome。
-2. 下载本仓库 ZIP 并解压，双击 `scripts/setup.command`。它检查环境，经你确认后安装本项目依赖、编译并打开设置向导；不会修改全局 Codex 配置。macOS 如果阻止脚本运行，可以采用下方终端方式，无需关闭系统安全功能。
+2. 从[发布下载页](https://github.com/MarkyMarkMa/unnc-moodle-mcp/releases)下载最高版本号的发布版 ZIP 附件并解压，双击 `scripts/setup.command`。它检查环境，经你确认后安装本项目依赖、编译并打开设置向导；不会修改全局 Codex 配置。macOS 如果阻止脚本运行，可以采用下方终端方式，无需关闭系统安全功能。
 3. 向导中选择资料根目录，在专用 Chrome 中亲自登录和完成 MFA，从真实课程名称列表中选课，再确认摘要。不要把密码、验证码或 Cookie 发给 AI。
 4. 按下方说明接入 Codex，安装附带 skill，重启客户端后检查工具是否出现。
 
@@ -44,11 +81,7 @@ ZIP 安装用户在原程序目录运行：
 npm run update
 ```
 
-0.4.1 或更早版本没有这个入口，在原程序目录运行一次：
-
-```sh
-(set -o pipefail; curl -fsSL https://raw.githubusercontent.com/MarkyMarkMa/unnc-moodle-mcp/main/scripts/update.mjs | node --input-type=module - --install-dir "$PWD")
-```
+0.4.1 或更早版本先按页面顶部的[旧版首次升级](#旧版首次升级只需一次)操作。
 
 这条命令从本项目 GitHub 下载并执行更新脚本。更新器自动选择最高版本号的已发布版本（包括标记为 prerelease 的公开版本，不含草稿），校验 GitHub ZIP digest 与公开源码清单，在临时目录安装依赖和编译成功后才替换原位置的程序。不修改全局 Codex 配置、独立安装的 skill、课程名单、登录会话或资料；不会自动下载课件。原安装路径保留，通常无需改 MCP 配置。Git checkout 拒绝自动替换，请通过 Git 更新并重新安装/编译。
 
@@ -96,7 +129,7 @@ npm run update
 
 **改根目录不等于自动迁移。** 要保留旧历史：停止 MCP/CLI、备份旧根目录，将 materials、state、courses.json 整体复制到一个新目录，保留旧目录，运行 setup 确认新根目录，重启 MCP 并回读设置。不要只复制课件而漏掉 manifest；不要在同步运行时迁移。项目没有自动迁移命令，未执行真实资料迁移测试。
 
-从旧版本升级：已有白名单和资料不自动改动。首次运行 setup 或通过工具确认原根目录即可；不要为升级重新下载全部资料。不要上传自己的数据目录。
+从旧版本升级按页面顶部的入口操作。已有课程名单、资料和确认设置继续保留；仅在 `get_sync_settings` 显示未确认时核对原目录与课程后确认，不重复要求已设置用户跑完整首次向导。不要为升级重新下载全部资料，不要上传自己的数据目录。
 
 ## 快速同步与新增课程（0.4.0）
 
