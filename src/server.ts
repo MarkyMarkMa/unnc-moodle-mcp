@@ -8,7 +8,7 @@ import { selectCourses, confirmSetup } from './setup.js';
 process.umask(0o077);
 const service = new MoodleService();
 for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, () => { void service.shutdown().finally(() => process.exit(0)); });
-const server = new McpServer({ name: 'local-moodle-mcp', version: '0.4.1' }, {
+const server = new McpServer({ name: 'local-moodle-mcp', version: '0.4.2' }, {
   instructions: 'Read-only Moodle course materials. Download/sync only courses explicitly selected in the local courses.json configuration. External links are reported, never followed with school credentials. Before downloads, explicitly confirm the directory and course selection through setup. Manual one-shot sync only. Never submit assignments, send messages, change accounts, or expose credentials. NEEDS_LOGIN requires the user to run npm run login. Downloads keep old versions. Requests are serial and paced.',
 });
 const wrap = async (action: () => Promise<unknown>) => {

@@ -9,6 +9,10 @@ description: 在 Codex 中设置和使用 UNNC Moodle 资料同步 MCP，包括�
 
 先定位用户下载的公开项目和 README。项目提供 `scripts/setup.command`（macOS 双击入口）、`npm run setup` 和 `npm run doctor`。安装需要 Node.js 24+ 和 Google Chrome。说明将安装项目依赖；用户已授权安装时继续，否则确认。按 README 生成/填写 Codex 的 MCP 配置，修改全局配置前说明具体改动并保留现有配置。skill 本身不安装 MCP、不授权全局配置变更。
 
+## 程序更新
+
+用户要求更新时，定位实际安装入口和 README；ZIP 安装使用 npm run update，旧版首次升级用 README 的独立更新入口。保持安装路径、已有设置与资料，不要求重新选课。Git checkout 通过 Git 更新，不能用 ZIP 更新器替换源码历史。更新命令安装项目依赖，已有用户授权时继续；不修改全局配置或独立 skill。更新后重新连接 MCP/重启客户端，再回读设置和登录；用户只要求整理时调用 sync_courses mode: organize，不触发下载。
+
 ## 首次设置与换课
 
 先调用 `get_sync_settings` 和 `check_connection`。返回 `authenticated: false`、`needsLogin: true` 或报 `NEEDS_LOGIN` 时，让用户在本地运行 `npm run login` 并亲自完成学校登录/MFA；不得索要密码、验证码、Cookie 或复制个人 Chrome。

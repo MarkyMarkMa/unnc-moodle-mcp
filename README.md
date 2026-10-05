@@ -36,6 +36,30 @@ skill 负责引导，MCP 负责硬性检查。**未确认目录或名单为空�
 
 服务入口为 `node /absolute/project/dist/src/server.js`，使用标准 MCP stdio，stdout 只用于协议。官方 MCP Client 已测试工具发现与调用；没有实测 Claude/Cursor 等客户端，因此不承诺直接兼容。
 
+## 一条命令更新
+
+ZIP 安装用户在原程序目录运行：
+
+```sh
+npm run update
+```
+
+0.4.1 或更早版本没有这个入口，在原程序目录运行一次：
+
+```sh
+(set -o pipefail; curl -fsSL https://raw.githubusercontent.com/MarkyMarkMa/unnc-moodle-mcp/main/scripts/update.mjs | node --input-type=module - --install-dir "$PWD")
+```
+
+这条命令从本项目 GitHub 下载并执行更新脚本。更新器自动选择最高版本号的已发布版本（包括标记为 prerelease 的公开版本，不含草稿），校验 GitHub ZIP digest 与公开源码清单，在临时目录安装依赖和编译成功后才替换原位置的程序。不修改全局 Codex 配置、独立安装的 skill、课程名单、登录会话或资料；不会自动下载课件。原安装路径保留，通常无需改 MCP 配置。Git checkout 拒绝自动替换，请通过 Git 更新并重新安装/编译。
+
+替换时禁止并发 Moodle 操作；正在同步时会停止更新，完成后重试。旧程序保留在终端打印的 `previous` 备份目录，替换失败自动回滚。强制结束进程或断电不保证自动恢复：保留 `.moodle-update-*` 目录与 `update.json`，核对其中的原安装路径和备份，恢复后再处理 `.moodle-update-lock` 和资料目录中的 `state/operation.lock`；不要在另一个更新或同步仍运行时删除锁。依赖安装失败不动旧程序。
+
+更新完成后重新连接 Moodle MCP 或重启 Codex，然后直接说：
+
+> 检查 Moodle 登录和设置，把已有资料整理成新版英文目录，不重新下载。
+
+如果登录过期，由用户亲自完成登录/MFA；旧课程名单及设置继续使用，无需重新选课。之后每次更新都可使用 `npm run update`。
+
 ## 工具与常用命令
 
 | 工具 | 用途 |
