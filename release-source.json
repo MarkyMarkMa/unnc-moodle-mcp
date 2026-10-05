@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "2f553ad9e27f05bd5780613d7739dfce2fa0ce45",
+  "sourceCommit": "a975aed3d2b32f971ebcdb95bb15858e66b4d53b",
   "sourceSubdirectory": "moodle-mcp",
   "dirty": false,
   "finalCandidate": true,
@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "src/browser.ts",
-      "sha256": "7194fa61d618bea366ee8a32cc2f76e6449d79fa12f72b7663510c8dac051096",
+      "sha256": "ba4de2b61b4fca02970f55c32624811c756fcfefa589374879224bd63b8a936a",
       "mode": 420
     },
     {
@@ -18,7 +18,7 @@
     },
     {
       "path": "src/config.ts",
-      "sha256": "f1abfae5cc538be74a648bb7061b8a9e8e8dfce287f43e65967c3f405cfb4f56",
+      "sha256": "cda3e5fc95e13353251058f2e8ebba3911dc1453a743ebc35e9e90113b4f0486",
       "mode": 420
     },
     {
@@ -43,7 +43,7 @@
     },
     {
       "path": "src/server.ts",
-      "sha256": "2aebb391e406b8c7bae8101cd88f5c491ddc72746c257652a45adcb7ef7e981f",
+      "sha256": "d26b41b21fe5f51516b7f93beb262219c1e03a4f81ddfef4e5237f012b610bca",
       "mode": 420
     },
     {
@@ -73,17 +73,17 @@
     },
     {
       "path": "src/onboarding.ts",
-      "sha256": "18f63c876328c9cb550880edc6a1daed2d912e5c729eb9f06db0e35c05862b08",
+      "sha256": "7dc2b4b9bf52ac84abb8290e6053582f6a3d543aa9b63fa5cf703f9de5018b91",
       "mode": 420
     },
     {
       "path": "src/platform.ts",
-      "sha256": "55bdc600b217e64b2b3c1120aadd721098940d1600c92116e2a5bd2f2290fe41",
+      "sha256": "09a942e5438088c95d2c7209935ef74e45b941abbd89c32b72ea2214815562e9",
       "mode": 420
     },
     {
       "path": "test/platform.test.ts",
-      "sha256": "5468c384750956b22fdcd68bf1a3d9d6f355137868f34ffce36ba86957e01a72",
+      "sha256": "cf55af88fd98f698f8c9bf8220c74760bc6641279492ceb21eee1f1eb66a1063",
       "mode": 420
     },
     {
@@ -113,7 +113,7 @@
     },
     {
       "path": "test/pagination.test.ts",
-      "sha256": "67063ac8ee78bfe52f724d9cd41f1a3482021053de7bb9dcc10ee274bca0f059",
+      "sha256": "c392221706c92ea46685eb4d36db2a82bc00215cc6da9dd99079cf593b8e43c2",
       "mode": 420
     },
     {
@@ -143,7 +143,7 @@
     },
     {
       "path": "scripts/login.mjs",
-      "sha256": "b986fa64f37c4e1fd83b3196a491b9c43a4f2297e31c210d8e17d93ebe33ac03",
+      "sha256": "0539bb1a17e109e2d1966e5533ca197bc724694cb48106555b40171ad432c768",
       "mode": 420
     },
     {
@@ -163,47 +163,47 @@
     },
     {
       "path": "scripts/doctor.mjs",
-      "sha256": "d5bfcab5df03fa50068b632247d3ab5e7943d12c60ca22a3177beff62b8bff1e",
+      "sha256": "b40cf9a7a193f5b8a71badcf0f4c11f0f5f6faf10a443ce70cb8e3311bf7dd95",
       "mode": 420
     },
     {
       "path": "docs/README.zh.md",
-      "sha256": "6fc602c3da688ec20a72739edb1db5527ac35b6616516d8e4d49f0dace41d64f",
+      "sha256": "86382a405b34f4c0fc666b960fb986447de77025c28dddbfa4761cc5bca53e66",
       "mode": 420
     },
     {
       "path": "docs/USAGE.md",
-      "sha256": "47ca0097ce25b008ca08969f687c391e958f4071bbea9a0dd6b24ea5f350678c",
+      "sha256": "0df171aad5dc3af9149ee3d0d1f250e5a4c7323cf192a2df988e52b9fe19aae5",
       "mode": 420
     },
     {
       "path": "docs/USAGE.zh.md",
-      "sha256": "6672efaba8283501a7905fabe921858a53676c767a4f6022154c7c853b43ccce",
+      "sha256": "19619d9b43d3b71e89480a6a6e0ae2143fe0c2c0934359932f8863a1c32ec238",
       "mode": 420
     },
     {
       "path": "docs/RELEASE.md",
-      "sha256": "62802243bb813e37cab4f4ea469b71ef3e0b22d8e0bb60fa3ecb9027cad34f1c",
+      "sha256": "612ee4eb78b4f1e248a887c75835edab692dbd3ca548a51fd11602047e786c63",
       "mode": 420
     },
     {
       "path": "docs/TESTING.md",
-      "sha256": "32c0cf80ad44911a4a8327c1e94d7626f3f0e3bc035ca37e32e574b145d89214",
+      "sha256": "0bed0afcbb148081d52d17de1b85970cac385c79e21c80145c3182d8d49114e7",
       "mode": 420
     },
     {
       "path": "skills/unnc-moodle/SKILL.md",
-      "sha256": "4f548ff796ba997a2b4bf944ec9c886cc5fd9da9dc355d2f801b44a1cbb6e06c",
+      "sha256": "aefb254e8129d0730c5147af198c4be62389743d78d92c14cbf2b85693bcae71",
       "mode": 420
     },
     {
       "path": "package.json",
-      "sha256": "f531be3b4876b79c0c21b63fa80410eea75a9bfa24436f61347b0037584b602b",
+      "sha256": "e482c9e284a66dd9cbeeed239119d2d42f1fa72d9a699430836ad23d8cb4d5c9",
       "mode": 420
     },
     {
       "path": "package-lock.json",
-      "sha256": "43a4fd888183f9826b6eff7d1d37a5a9079d8d21a84f14186390f91baf7fef84",
+      "sha256": "2cf6bd91439330c51042a2a98575c9d367733a535f956cef5e2bb0d4cc58ba1e",
       "mode": 420
     },
     {
@@ -213,7 +213,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "6bf870a5c3fba73980ea1de984fccc6ea5f79afd963fbc74abe6c210f948f638",
+      "sha256": "9a85f278e2b31ee6d9bfd99b90529a6b2988a1010cbddcd5abbbfaf42041cf1c",
       "mode": 420
     },
     {

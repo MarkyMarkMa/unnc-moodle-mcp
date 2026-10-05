@@ -28,3 +28,5 @@ Windows 测试会明确跳过 macOS 专属自动升级的三项集成测试，�
 0.4.5：合成目录验证管理文件及升级备份收纳、manifest/批注保留、重复启动、路径冲突/符号链接/新旧操作锁/中断标记停止、移动及设置写入失败回滚、课程确认保留、显式配置覆盖不迁移；标准 MCP stdio 启动验证迁移后工具发现及实际设置结果；更新器检查新旧状态锁。真实 Windows、断电级恢复仍未验证。
 
 0.4.6：独立 skill 安装器验证默认/旧位置/自定义 CODEX_HOME（含空格）、相同版本幂等、不同及不完整 skill 保留、重复安装位置拒绝、符号链接与锁拒绝、未授权非交互调用不写入、已授权 CLI 安装。MCP 设置完成后两平台共用向导询问安装，失败不撤销设置。真实 Windows 首次安装流程仍未验证。
+
+0.4.7：Windows 登录、同步和 DOM 测试统一使用 Playwright msedge channel；macOS 仍用 chrome。测试覆盖两平台 channel、名称与 profile 隔离。Windows 不检查不具备 POSIX 权限意义的 mode 位，仍拒绝符号链接和非普通会话文件；Windows ACL 保护尚未实测。真实 Windows + Edge 安装、MFA 与同步仍待验证。

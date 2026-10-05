@@ -102,15 +102,15 @@ Downloads retry transient network or parsing failures at most three times, with 
 
 ## Authentication and supported content
 
-The project uses `~/Library/Application Support/moodle-mcp/browser-profile`, a dedicated Chrome profile. It does not read or copy your everyday Chrome credentials. Session files have restricted permissions, which do not constitute encryption. Do not publish this profile, session files, course lists, materials, or private verification records.
+The project uses `~/Library/Application Support/moodle-mcp/browser-profile`, a dedicated Chrome profile on macOS. Windows uses `%LOCALAPPDATA%/moodle-mcp/edge-profile` for Edge. It does not read or copy your everyday Chrome or Edge credentials. Session files have restricted permissions, which do not constitute encryption. Do not publish this profile, session files, course lists, materials, or private verification records.
 
 File and published folder resources are supported. External links are reported without following them with school credentials. Assignments, forums, quizzes, and other non-file activities are skipped. Special plugins, hidden folder subtrees, video, and ZIP expansion are not guaranteed. HTML lectures are saved as files without executing their scripts during synchronization; opening them later in a browser may execute original scripts or load external assets.
 
-To remove the local session, stop the service and dedicated browser, remove only this project's dedicated profile, and sign out through the school's normal controls as appropriate. Removing local files does not guarantee revocation of other session copies. Do not remove your personal Chrome profile.
+To remove the local session, stop the service and dedicated browser, remove only this project's dedicated profile, and sign out through the school's normal controls as appropriate. Removing local files does not guarantee revocation of other session copies. Do not remove your personal Chrome or Edge profile.
 
 ## Verification
 
-Run `npm test`. Tests cover configuration, course approval, parser behavior, browser DOM fixtures, update integrity, synchronization, failure handling, and release export. Chrome tests use intercepted requests and synthetic pages. The official MCP client has been tested; other clients and platforms are not claimed as verified.
+Run `npm test`. Tests cover configuration, course approval, parser behavior, browser DOM fixtures, update integrity, synchronization, failure handling, and release export. Browser tests use intercepted requests and synthetic pages. The official MCP client has been tested; other clients and platforms are not claimed as verified.
 
 Maintainer verification has included real course discovery, downloads, and reorganizing 61 existing files without redownloading. Independent public exports pass the same test suite. New accounts, future Moodle layouts, long-term session reliability, power-loss consistency, and automatic directory migration remain outside verified coverage. See [testing records](TESTING.md) and [release procedure](RELEASE.md), currently maintained in Chinese.
 
@@ -119,3 +119,5 @@ Maintainer verification has included real course discovery, downloads, and reorg
 [MCP SDK](https://modelcontextprotocol.io/docs/sdk) · [Playwright](https://playwright.dev/docs/api/class-browsertype#browser-type-launch-persistent-context) · [Codex MCP](https://developers.openai.com/codex/mcp)
 
 Windows adaptations are experimental; see the [Windows guide](../README.md#windows-experimental). Automatic updating is macOS-only; on Windows use a separate new program directory and preserve settings/materials.
+
+Windows defaults to Microsoft Edge with a new dedicated edge-profile. Old Chrome profiles are preserved, not imported; sign in again. An explicit MOODLE_PROFILE_DIR must point to a new dedicated Edge profile. macOS continues to use Chrome.

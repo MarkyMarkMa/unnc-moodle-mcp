@@ -1,3 +1,4 @@
+import { browserChannel } from '../src/platform.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { chromium, type BrowserContext, type Page } from 'playwright';
@@ -5,7 +6,7 @@ import { BrowserBackend } from '../src/browser.js';
 import { config } from '../src/config.js';
 
 test('resource discovery reads enclosing Moodle section titles without mixing sections', async t => {
-  const browser = await chromium.launch({ channel: 'chrome', headless: true, chromiumSandbox: true });
+  const browser = await chromium.launch({ channel: browserChannel(), headless: true, chromiumSandbox: true });
   t.after(() => browser.close());
   const context = await browser.newContext(); const page = await context.newPage();
   await context.route('https://moodle.nottingham.ac.uk/**', route => route.fulfill({ contentType: 'text/html', body: `
@@ -24,7 +25,7 @@ test('resource discovery reads enclosing Moodle section titles without mixing se
 });
 
 test('browser course listing handles pagination and a delayed hidden-course response', async () => {
-  const browser = await chromium.launch({ channel: 'chrome', headless: true, chromiumSandbox: true });
+  const browser = await chromium.launch({ channel: browserChannel(), headless: true, chromiumSandbox: true });
   try {
     const context = await browser.newContext();
     const p = await context.newPage();
@@ -58,7 +59,7 @@ test('browser course listing handles pagination and a delayed hidden-course resp
 });
 
 test('resource discovery waits for recognized empty/delayed course content and rejects partial sections', async t => {
-  const browser = await chromium.launch({ channel: 'chrome', headless: true, chromiumSandbox: true });
+  const browser = await chromium.launch({ channel: browserChannel(), headless: true, chromiumSandbox: true });
   t.after(() => browser.close()); const context = await browser.newContext(); const p = await context.newPage();
   const cfg = { ...config(), setupConfirmed: true, courses: [{ id: 101, name: 'Example' }], requestIntervalMs: 0, timeoutMs: 500 };
   const backend = new BrowserBackend(cfg);
@@ -81,7 +82,7 @@ test('resource discovery waits for recognized empty/delayed course content and r
 test('wrapper iframe/object/embed URLs resolve against response URL and document base', async t => {
   const { mkdtemp, rm } = await import('node:fs/promises'); const { tmpdir } = await import('node:os'); const { join } = await import('node:path');
   const { resourceFile } = await import('../src/parser.js');
-  const browser = await chromium.launch({ channel: 'chrome', headless: true, chromiumSandbox: true }); t.after(() => browser.close());
+  const browser = await chromium.launch({ channel: browserChannel(), headless: true, chromiumSandbox: true }); t.after(() => browser.close());
   const page = await browser.newPage(); const dir = await mkdtemp(join(tmpdir(), 'moodle-relative-')); t.after(() => rm(dir, { recursive: true, force: true }));
   const file = resourceFile({ courseId: 101, moduleId: 201, title: 'Notes', type: 'file', url: 'https://moodle.nottingham.ac.uk/mod/resource/view.php?id=201' });
   for (const tag of ['iframe', 'object', 'embed']) {

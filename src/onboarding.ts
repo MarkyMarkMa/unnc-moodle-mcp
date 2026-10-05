@@ -1,3 +1,4 @@
+import { browserName } from './platform.js';
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
 import { isAbsolute, resolve } from 'node:path';
@@ -26,7 +27,7 @@ export async function onboarding(login: () => Promise<number>): Promise<void> {
     try { check = await service.check(); }
     catch (e) { if (!(e instanceof MoodleError) || e.code !== 'NEEDS_LOGIN') throw e; }
     if (!check?.authenticated) {
-      const answer = await rl.question('打开专用 Chrome，由你亲自登录并完成 MFA？输入 yes：');
+      const answer = await rl.question(`打开专用 ${browserName()}，由你亲自登录并完成 MFA？输入 yes：`);
       if (answer.trim().toLowerCase() !== 'yes') return;
       if (await login() !== 0) throw new MoodleError('NEEDS_LOGIN');
       const verified = await service.check();

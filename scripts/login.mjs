@@ -1,11 +1,11 @@
 import { chromium } from 'playwright';
 import { mkdir, chmod, writeFile, rename, lstat } from 'node:fs/promises';
-import { applicationDirectory } from '../dist/src/platform.js';
+import { applicationDirectory, browserChannel, browserName, browserProfileName } from '../dist/src/platform.js';
 import { join, dirname, isAbsolute } from 'node:path';
 
-// This profile belongs only to this project; never copy a personal Chrome profile.
+// This profile belongs only to this project; never copy a personal Chrome or Edge profile.
 const root = applicationDirectory();
-const profile = process.env.MOODLE_PROFILE_DIR ?? join(root, 'browser-profile');
+const profile = process.env.MOODLE_PROFILE_DIR ?? join(root, browserProfileName());
 process.umask(0o077);
 if (!isAbsolute(profile)) throw new Error('Profile must be an absolute path');
 await mkdir(profile, { recursive: true, mode: 0o700 });
@@ -13,7 +13,7 @@ if ((await lstat(profile)).isSymbolicLink()) throw new Error('Refusing symlink p
 if (dirname(profile) === root) await chmod(root, 0o700);
 await chmod(profile, 0o700);
 const context = await chromium.launchPersistentContext(profile, {
-  channel: 'chrome', headless: false, acceptDownloads: false, chromiumSandbox: true,
+  channel: browserChannel(), headless: false, acceptDownloads: false, chromiumSandbox: true,
 });
 const page = context.pages()[0] ?? await context.newPage();
 let stop = false;
@@ -22,13 +22,13 @@ process.on('SIGINT', () => { stop = true; });
 process.on('SIGTERM', () => { stop = true; });
 try {
   await page.goto('https://moodle.nottingham.ac.uk/', { waitUntil: 'domcontentloaded', timeout: 60000 });
-  console.error('专用 Moodle 浏览器已打开。请亲自登录并完成 MFA；程序不会读取或填写密码。');
+  console.error(`专用 ${browserName()} Moodle 浏览器已打开。请亲自登录并完成 MFA；程序不会读取或填写密码。`);
   while (!stop) {
     const u = new URL(page.url());
     if (u.origin === 'https://moodle.nottingham.ac.uk' && !/^\/(login|auth)\//.test(u.pathname)) {
       const modules = await page.getByText('My Modules', { exact: true }).count().catch(() => 0);
       if (modules > 0) {
-        // Chrome discards session cookies on a clean shutdown. Persist only this
+        // Chromium browsers discard session cookies on a clean shutdown. Persist only this
         // dedicated Moodle session, never Microsoft's cookies or a personal profile.
         const state = await context.storageState();
         const cookies = state.cookies.filter(c => c.domain.replace(/^\./, '') === 'moodle.nottingham.ac.uk');

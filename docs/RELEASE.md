@@ -42,3 +42,5 @@ Windows 实验性预发布仍使用与 package.json 一致的数字版本号，�
 0.4.5 管理目录变更：发布说明必须提示升级前停止旧 MCP/CLI，首次启动迁移 state、默认 courses.json 及识别到的旧升级备份到 _moodle。跨平台共用实现，Windows 仍为实验性；跨根目录搬家仍需手动保留完整数据。
 
 0.4.6：设置末尾提供推荐的 skill 安装选项；发布说明包含老用户 npm run install-skill 补装及程序更新不替换独立 skill 的限制。安装器与其测试进入公开白名单。
+
+0.4.7：Windows 改为 Edge，登录、同步、doctor 与 DOM 测试一致；旧 Chrome profile 不导入不删除，需重新登录。显式 profile 覆盖使用新 Edge 目录。仍为未实测的 Windows 实验性预发布。

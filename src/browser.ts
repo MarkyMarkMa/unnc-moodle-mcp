@@ -1,3 +1,4 @@
+import { browserChannel, sessionModeUnsafe } from './platform.js';
 import { chromium, type BrowserContext, type Page, type APIResponse } from 'playwright';
 import { readFile, open, lstat, chmod } from 'node:fs/promises';
 import { constants } from 'node:fs';
@@ -39,14 +40,14 @@ export class BrowserBackend implements Backend {
     const sessionFile = join(this.cfg.profileDir, 'moodle-session.json');
     let state: { cookies: Parameters<BrowserContext['addCookies']>[0] };
     try {
-      const s = await lstat(sessionFile); if (!s.isFile() || s.isSymbolicLink() || (s.mode & 0o077)) throw new MoodleError('PATH_UNSAFE');
+      const s = await lstat(sessionFile); if (!s.isFile() || s.isSymbolicLink() || sessionModeUnsafe(s.mode)) throw new MoodleError('PATH_UNSAFE');
       const h = await open(sessionFile, constants.O_RDONLY | constants.O_NOFOLLOW);
       try { state = JSON.parse(await h.readFile('utf8')) as typeof state; } finally { await h.close(); }
       if (!Array.isArray(state.cookies) || !state.cookies.length || state.cookies.some(c => c.domain?.replace(/^\./, '') !== 'moodle.nottingham.ac.uk')) throw new MoodleError('NEEDS_LOGIN');
     } catch (e) { if (e instanceof MoodleError) throw e; throw new MoodleError('NEEDS_LOGIN'); }
     try {
       this.context = await chromium.launchPersistentContext(this.cfg.profileDir, {
-        channel: 'chrome', headless: this.cfg.headless, acceptDownloads: false,
+        channel: browserChannel(), headless: this.cfg.headless, acceptDownloads: false,
         serviceWorkers: 'block', chromiumSandbox: true,
       });
       await this.context.addCookies(state.cookies);

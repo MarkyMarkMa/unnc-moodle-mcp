@@ -1,7 +1,7 @@
 import { readFileSync, lstatSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { isAbsolute, join, resolve } from 'node:path';
-import { applicationDirectory, contained } from './platform.js';
+import { applicationDirectory, browserProfileName, contained } from './platform.js';
 import { migrateStorage, saveMigratedSettings } from './storage.js';
 import { MoodleError, type SelectedCourse } from './model.js';
 
@@ -15,7 +15,7 @@ export function config(): Config {
   if (!isAbsolute(settingsFile)) throw new MoodleError('INVALID_INPUT');
   let settings = loadSettings(settingsFile);
   const dataDir = process.env.MOODLE_DATA_DIR ?? settings?.dataDir ?? join(homedir(), 'Documents', 'MoodleSync');
-  const profileDir = process.env.MOODLE_PROFILE_DIR ?? join(applicationDirectory(), 'browser-profile');
+  const profileDir = process.env.MOODLE_PROFILE_DIR ?? join(applicationDirectory(), browserProfileName());
   let coursesFile = process.env.MOODLE_COURSES_FILE ?? (settings?.dataDir === resolve(dataDir) ? settings.coursesFile : undefined) ?? join(dataDir, '_moodle', 'courses.json');
   if (![dataDir, profileDir, coursesFile, settingsFile].every(isAbsolute)) throw new MoodleError('INVALID_INPUT');
   if (contained(settingsFile, coursesFile) && contained(coursesFile, settingsFile)) throw new MoodleError('INVALID_INPUT');

@@ -15,7 +15,7 @@
 
 下载已选课程的资料，按课程与 Moodle 分区组织，并通过 Codex 执行增量同步。历史版本与本地批注均予以保留。
 
-**运行环境：** macOS、Google Chrome、[Node.js 24+](https://nodejs.org/)。本项目为面向 UNNC / Nottingham Moodle 的非官方工具，仅支持手动同步；Windows + Chrome 已加入实验性适配，仍待真实验证；其他 Moodle 站点尚未验证。
+**运行环境：** macOS + Google Chrome，或实验性 Windows + Microsoft Edge，以及[Node.js 24+](https://nodejs.org/)。本项目为面向 UNNC / Nottingham Moodle 的非官方工具，仅支持手动同步；Windows + Edge 已加入实验性适配，仍待真实验证；其他 Moodle 站点尚未验证。
 
 <a id="installation"></a>
 
@@ -112,3 +112,5 @@ macOS 和 Windows 设置向导均提供推荐的 skill 安装选项；老用户�
 ## Windows（实验性）
 
 Windows 安装、配置目录、权限与手动升级说明见[项目说明](../README.md#windows-experimental)。尚未完成真实 Windows 验证，不能承诺完整支持；自动升级仍仅适用于 macOS。
+
+Windows 默认使用 Microsoft Edge，专用目录为 `%LOCALAPPDATA%/moodle-mcp/edge-profile`。旧 Windows Chrome profile 保留但不导入，需本人重新登录；课程和资料不变。显式设置 MOODLE_PROFILE_DIR 时请使用新的 Edge 专用目录。macOS 保持 Chrome。

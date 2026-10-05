@@ -4,9 +4,9 @@
 
 ## 新手开始
 
-1. 安装 [Node.js 24 或更新版本](https://nodejs.org/)（包含 npm）与 Google Chrome。
+1. 安装 [Node.js 24 或更新版本](https://nodejs.org/)（包含 npm）与对应浏览器（macOS Google Chrome / Windows Microsoft Edge）。
 2. 从[发布下载页](https://github.com/MarkyMarkMa/unnc-moodle-mcp/releases)下载最高版本号的发布版 ZIP 附件并解压，双击 `scripts/setup.command`。它检查环境，经你确认后安装本项目依赖、编译并打开设置向导；不会修改全局 Codex 配置。macOS 如果阻止脚本运行，可以采用下方终端方式，无需关闭系统安全功能。
-3. 向导中选择资料根目录，在专用 Chrome 中亲自登录和完成 MFA，从真实课程名称列表中选课，再确认摘要。不要把密码、验证码或 Cookie 发给 AI。
+3. 向导中选择资料根目录，在专用浏览器 中亲自登录和完成 MFA，从真实课程名称列表中选课，再确认摘要。不要把密码、验证码或 Cookie 发给 AI。
 4. 按下方说明接入 Codex，安装附带 skill，重启客户端后检查工具是否出现。
 
 终端方式：打开项目目录，运行：
@@ -20,7 +20,7 @@ npm run setup
 
 向导不会自动下载。设置完成后运行 `npm run sync`，或在接入后的 Codex 中说“检查 Moodle 登录状态，然后同步我已选择的课程”。无需输入课程 ID；向导用课程序号选择。默认资料根目录 `~/Documents/MoodleSync`，可以改用其他绝对路径。
 
-环境检查针对默认 `/Applications` 中的 Chrome；不是 Chrome 安装器。项目不自动安装 Node/Chrome，也不自动授权 Codex 修改配置。
+环境检查针对 macOS /Applications 中的 Chrome 或 Windows 标准安装位置的 Edge；不是浏览器安装器。项目不自动安装 Node 或浏览器，也不自动授权 Codex 修改配置。
 
 ## 接入 Codex
 
@@ -123,9 +123,9 @@ macOS 和 Windows 升级到 0.4.5 前均须停止所有旧 MCP/CLI 进程。新�
 
 ## 登录与数据边界
 
-专用浏览器位于 `~/Library/Application Support/moodle-mcp/browser-profile`，不读取或复制日常 Chrome。目录700、会话600权限，只额外保存 Moodle 域 Cookie；整个专用 profile 可能有正常 SSO 缓存，应视为敏感。文件权限不等于加密。
+专用浏览器位于 `~/Library/Application Support/moodle-mcp/browser-profile`，不读取或复制日常 Chrome/Edge。目录700、会话600权限，只额外保存 Moodle 域 Cookie；整个专用 profile 可能有正常 SSO 缓存，应视为敏感。文件权限不等于加密。
 
-NEEDS_LOGIN 时停止操作，运行 `npm run login` 亲自认证。关闭异常或 Chrome 缺失应结合 doctor 排查，PROFILE_BUSY 不能保证就是另一个进程占用。撤销时停止服务/专用窗口，删除本项目专用 profile，并按学校方式注销学校会话；删除本机文件不能保证撤销其他副本。不要删除个人 Chrome。
+NEEDS_LOGIN 时停止操作，运行 `npm run login` 亲自认证。关闭异常或 Chrome 缺失应结合 doctor 排查，PROFILE_BUSY 不能保证就是另一个进程占用。撤销时停止服务/专用窗口，删除本项目专用 profile，并按学校方式注销学校会话；删除本机文件不能保证撤销其他副本。不要删除个人 Chrome/Edge。
 
 仅访问已选择、账户有权限的课程，不提交作业、发消息或修改学校内容。外链只报告，不携带学校凭据访问；登录窗口允许学校正常 SSO。访问会被网站正常记录。不要把 profile、会话、课程名单、课件或私有验证记录提交 GitHub。
 
@@ -137,4 +137,6 @@ MIT 许可只覆盖本项目代码，不授予学校课件、品牌或第三方�
 
 参考：[MCP SDK](https://modelcontextprotocol.io/docs/sdk)、[Playwright](https://playwright.dev/docs/api/class-browsertype#browser-type-launch-persistent-context)、[Codex MCP](https://developers.openai.com/codex/mcp)。
 
-Windows + Chrome 为实验性适配，安装与路径见[项目说明](../README.md#windows-experimental)。自动升级仍仅适用于 macOS；Windows 使用新程序目录手动升级并保留配置及资料。
+Windows + Edge 为实验性适配，安装与路径见[项目说明](../README.md#windows-experimental)。自动升级仍仅适用于 macOS；Windows 使用新程序目录手动升级并保留配置及资料。
+
+Windows 从 Chrome 版升级后使用 edge-profile，不导入旧浏览器 profile，需本人重新登录。MOODLE_PROFILE_DIR 覆盖应指向新的 Edge 专用目录。课程名单和资料保留。

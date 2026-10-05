@@ -1,6 +1,6 @@
 {
   "name": "local-moodle-mcp",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "private": true,
   "type": "module",
   "engines": {
@@ -37,5 +37,5 @@
     "typescript": "7.0.2"
   },
   "license": "MIT",
-  "description": "Local read-only UNNC Moodle MCP for macOS and Google Chrome"
+  "description": "Local read-only UNNC Moodle MCP for macOS + Chrome and experimental Windows + Edge"
 }

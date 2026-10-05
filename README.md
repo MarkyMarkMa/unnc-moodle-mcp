@@ -15,7 +15,7 @@
 
 Download materials from selected courses, organize them by course and Moodle section, and keep them up to date through Codex. Previous versions and local annotations are preserved.
 
-**Requirements:** macOS, Google Chrome, and [Node.js 24+](https://nodejs.org/). This is an unofficial project for UNNC / Nottingham Moodle. Synchronization is manual. Windows + Chrome has experimental adaptations, pending real Windows validation; other Moodle installations have not been verified.
+**Requirements:** macOS + Google Chrome, or experimental Windows + Microsoft Edge, and [Node.js 24+](https://nodejs.org/). This is an unofficial project for UNNC / Nottingham Moodle. Synchronization is manual. Windows + Edge has experimental adaptations, pending real Windows validation; other Moodle installations have not been verified.
 
 <a id="installation"></a>
 
@@ -109,10 +109,12 @@ Future documentation changes should follow these conventions: formal, concise wo
 
 ## Windows (experimental)
 
-Use Node.js 24+ and Google Chrome, without WSL. Open `scripts/setup.cmd` or run the npm installation commands in PowerShell / CMD. Generate correctly escaped MCP paths with `npm run codex-config`. The same setup wizard offers skill installation; its paths and standalone command are described above.
+Use Node.js 24+ and Microsoft Edge, without WSL. Open `scripts/setup.cmd` or run the npm installation commands in PowerShell / CMD. Generate correctly escaped MCP paths with `npm run codex-config`. The same setup wizard offers skill installation; its paths and standalone command are described above.
 
-Settings and the dedicated Chrome profile live under `%LOCALAPPDATA%/moodle-mcp`, falling back to `AppData/Local` under the user directory. Materials default to `Documents/MoodleSync`. Paste the materials path from `get_sync_settings` into File Explorer. Windows permissions depend on the user directory ACL; POSIX mode flags do not provide equivalent macOS protection.
+Settings and the dedicated Edge profile live under `%LOCALAPPDATA%/moodle-mcp`, falling back to `AppData/Local` under the user directory. Materials default to `Documents/MoodleSync`. Paste the materials path from `get_sync_settings` into File Explorer. Windows permissions depend on the user directory ACL; POSIX mode flags do not provide equivalent macOS protection.
 
-Automatic updating remains macOS-only. On Windows stop MCP and dedicated Chrome, keep the old program directory, install/build in a new program directory, update the MCP entry, and recheck settings. Preserve configuration and materials.
+Automatic updating remains macOS-only. On Windows stop MCP and dedicated Edge, keep the old program directory, install/build in a new program directory, update the MCP entry, and recheck settings. Preserve configuration and materials.
 
 The shared core and manifest schema remain unchanged. Real Windows installation, school login/MFA, file locking, long paths, ACL, and synchronization still require validation. Deep paths can encounter Windows path limits. macOS test results do not establish Windows support.
+
+Windows uses a new dedicated `edge-profile` directory. Existing Windows Chrome profiles are preserved and are not imported; sign in again with Edge. Course settings and materials remain unchanged. If you explicitly set `MOODLE_PROFILE_DIR`, point it at a new dedicated Edge directory rather than the old Chrome profile. macOS retains its Chrome profile.
