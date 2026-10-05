@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.test-output/
+.DS_Store
+*.log
+.env
+.env.*
+courses.json
+browser-profile/
+moodle-session.json*
+materials/
+state/
+verification/

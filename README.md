@@ -1,0 +1,99 @@
+# UNNC Moodle MCP + Codex skill
+
+在 Codex 中说“同步我的 Moodle 课件”，把已选择课程的讲义保存到电脑，更新时保留旧版本。一个共享 MCP 核心、首次设置向导和薄的 Codex skill；个人课程、路径和会话在仓库外，不维护个人专属代码分叉。
+
+**支持范围：UNNC 使用的 Nottingham Moodle、macOS + Google Chrome、Node.js 24+。** 非官方项目。只读访问学校数据，第一版仅手动同步。Windows、Edge、其他学校和其他 agent 客户端尚未验证。
+
+## 新手开始
+
+1. 安装 [Node.js 24 或更新版本](https://nodejs.org/)（包含 npm）与 Google Chrome。
+2. 下载本仓库 ZIP 并解压，双击 `scripts/setup.command`。它检查环境，经你确认后安装本项目依赖、编译并打开设置向导；不会修改全局 Codex 配置。macOS 如果阻止脚本运行，可以采用下方终端方式，无需关闭系统安全功能。
+3. 向导中选择资料根目录，在专用 Chrome 中亲自登录和完成 MFA，从真实课程名称列表中选课，再确认摘要。不要把密码、验证码或 Cookie 发给 AI。
+4. 按下方说明接入 Codex，安装附带 skill，重启客户端后检查工具是否出现。
+
+终端方式：打开项目目录，运行：
+
+```sh
+npm run doctor
+npm ci
+npm run build
+npm run setup
+```
+
+向导不会自动下载。设置完成后运行 `npm run sync`，或在接入后的 Codex 中说“检查 Moodle 登录状态，然后同步我已选择的课程”。无需输入课程 ID；向导用课程序号选择。默认资料根目录 `~/Documents/MoodleSync`，可以改用其他绝对路径。
+
+环境检查针对默认 `/Applications` 中的 Chrome；不是 Chrome 安装器。项目不自动安装 Node/Chrome，也不自动授权 Codex 修改配置。
+
+## 接入 Codex
+
+运行 `npm run codex-config` 可以打印已填好本机 Node 和服务路径的配置区块（复制从 `[mcp_servers.moodle_local]` 开始的部分，不包含 npm 提示）；它不会修改任何配置。仓库也提供 `codex-mcp.example.toml`。用 `command -v node` 找到 Node 绝对路径，填写它以及本项目 `dist/src/server.js` 的绝对路径。经你确认后将该区块加入自己的 Codex MCP 配置；先备份并保留其他服务。不要把凭据写进配置。重启客户端后调用 `get_sync_settings` 与 `check_connection`，核对实际目录、课程和登录状态。
+
+安装 skill：把仓库里的 `skills/unnc-moodle` 整个目录复制到 `~/.codex/skills/unnc-moodle`（自定义 CODEX_HOME 时用其 skills 目录）。已有同名 skill 时先比较，不静默覆盖。重启后可以说：
+
+> 使用 $unnc-moodle 帮我设置 Moodle，之后同步我选择的课件。
+
+skill 负责引导，MCP 负责硬性检查。**未确认目录或名单为空时，下载与同步返回 SETUP_REQUIRED；检查连接、发现课程仍然可用。** 安装 skill 不等于安装/连接 MCP，也不能绕过设置门槛。
+
+服务入口为 `node /absolute/project/dist/src/server.js`，使用标准 MCP stdio，stdout 只用于协议。官方 MCP Client 已测试工具发现与调用；没有实测 Claude/Cursor 等客户端，因此不承诺直接兼容。
+
+## 工具与常用命令
+
+| 工具 | 用途 |
+|---|---|
+| get_sync_settings | 显示目录、课程、setupConfirmed、readyToSync 和下一步 |
+| check_connection | 验证专用会话，不返回凭据 |
+| list_courses | 从 My Modules 发现课程，包括隐藏课程 |
+| select_courses(courseIds) | 经用户批准替换名单，拒绝未观察到的 ID；空数组清空名单 |
+| confirm_setup(dataDir,confirmed:true) | 经用户确认当前根目录和名单后保存设置；不是迁移工具 |
+| list_resources(courseId) | 列出已选课程资源及类型 |
+| download_resource(courseId,moduleId) | 下载指定已发现文件/文件夹模块 |
+| sync_courses(forceContentCheck?) | 对已批准名单执行一次增量同步 |
+
+终端命令：`npm run settings` 查看设置、`npm run login` 重新登录、`npm run courses` 列课、`npm run select -- COURSE_ID ...` 替换名单、`npm run select -- --clear` 清空名单。CLI select 后其他已运行进程需重启；MCP select_courses/confirm_setup 更新当前进程。多个进程同时更改配置时，应停止旧进程并重新核对，避免旧快照继续工作。
+
+下学期运行 `npm run setup` 重新选择课程即可，无需改源码。取消选择保留原有文件与历史，不再同步该课。已经登录时向导跳过重新登录。明确配置过相同设置时不用重复确认每次同步。
+
+## 保存位置与迁移
+
+持久设置默认 `~/Library/Application Support/moodle-mcp/settings.json`，向导在确认后记录所选根目录和课程配置路径。根目录下：
+
+- `materials/`：资料，按 `课程ID/模块ID/路径槽/v0001/文件名` 保存。
+- `state/`：增量状态、临时文件及操作锁。
+- `courses.json`：课程白名单。
+
+用 Finder 的 **⌘⇧G** 粘贴 `get_sync_settings` 中的 materials 路径查看。路径槽避免文件重名，版本目录保留历史；内容校验不代替 Git 源码版本管理。
+
+绝对路径环境变量可覆盖：`MOODLE_DATA_DIR`、`MOODLE_COURSES_FILE`、`MOODLE_SETTINGS_FILE`、`MOODLE_PROFILE_DIR`。名单与设置必须是各自专用的 JSON 文件，不能放入 materials、state 或浏览器 profile 内，不能指向同一文件。环境变量优先于持久设置；CLI 与 MCP 应使用一致的覆盖值。改变根目录或名单文件路径会要求重新确认，不能直接把旧确认用于新位置。`MOODLE_HEADLESS=false` 显示操作窗口。
+
+**改根目录不等于自动迁移。** 要保留旧历史：停止 MCP/CLI、备份旧根目录，将 materials、state、courses.json 整体复制到一个新目录，保留旧目录，运行 setup 确认新根目录，重启 MCP 并回读设置。不要只复制课件而漏掉 manifest；不要在同步运行时迁移。项目没有自动迁移命令，未执行真实资料迁移测试。
+
+从旧版本升级：已有白名单和资料不自动改动。首次运行 setup 或通过工具确认原根目录即可；不要为升级重新下载全部资料。不要上传自己的数据目录。
+
+## 同步结果与可靠性
+
+每次结果包括 added、updated、unchanged、failed、skipped、remoteMissing；失败包含阶段与下载尝试次数。必须检查业务结果，MCP 返回文本成功不代表所有资源同步成功。
+
+- 用资源 ID 与远端路径识别文件，用 SHA-256 比较内容。可靠 ETag 可条件请求；304 且本地校验一致才跳过。无验证器可能重复传输，但不重复保存相同内容。
+- 更新新建版本，保留旧版与用户本地编辑；远端消失不删除本地文件。只有已确认发现完整的页面才标记缺失，无法确认时报告解析失败并保留历史。
+- 下载阶段 NETWORK/PARSE_FAILED 最多三次，等待 1.5 秒、3 秒；持续失败仍报告，不猜链接。retryable 表示后续手动调用可能有意义，不表示自动无限重试。
+- 任意阶段 429 立即停止整批，保留已成功项；登录过期也停止。权限不足或404只报告对应项/课程。LOCAL_IO 提示先解决磁盘或权限，INTERNAL 不冒充网络故障。
+- 临时下载完成后才提交；成功摘要在状态保存成功后写入，失败清理临时状态文件。状态损坏停止，不重置历史。崩溃残留 operation.lock 仅在确认对应 PID 已停止后移除，不自动偷取锁。
+- 显式导航和下载请求串行、间隔至少 1.5 秒；浏览器自身页面子资源/AJAX 不是所有请求均经过该间隔。下载上限 100 MiB，响应体缓存，不是严格流式内存限制。
+
+文件与已发布文件夹可下载；论坛、测验、作业、反馈等非文件活动跳过。特殊插件、真实文件夹隐藏子树、视频、ZIP 展开不保证支持。HTML 讲义按文件保存，同步不执行脚本、不镜像外部资产；离线用浏览器打开后可能执行其原脚本并加载外部资源。
+
+## 登录与数据边界
+
+专用浏览器位于 `~/Library/Application Support/moodle-mcp/browser-profile`，不读取或复制日常 Chrome。目录700、会话600权限，只额外保存 Moodle 域 Cookie；整个专用 profile 可能有正常 SSO 缓存，应视为敏感。文件权限不等于加密。
+
+NEEDS_LOGIN 时停止操作，运行 `npm run login` 亲自认证。关闭异常或 Chrome 缺失应结合 doctor 排查，PROFILE_BUSY 不能保证就是另一个进程占用。撤销时停止服务/专用窗口，删除本项目专用 profile，并按学校方式注销学校会话；删除本机文件不能保证撤销其他副本。不要删除个人 Chrome。
+
+仅访问已选择、账户有权限的课程，不提交作业、发消息或修改学校内容。外链只报告，不携带学校凭据访问；登录窗口允许学校正常 SSO。访问会被网站正常记录。不要把 profile、会话、课程名单、课件或私有验证记录提交 GitHub。
+
+## 验证与发布
+
+运行 `npm test`。测试范围、真实证据和未验证项见 [docs/TESTING.md](docs/TESTING.md)。公开导出与审查步骤见 [docs/RELEASE.md](docs/RELEASE.md)。发布包包含同一套核心、向导、skill、测试与许可证，不包含个人仓库旧 Git 历史。
+
+MIT 许可只覆盖本项目代码，不授予学校课件、品牌或第三方内容的权利。
+
+参考：[MCP SDK](https://modelcontextprotocol.io/docs/sdk)、[Playwright](https://playwright.dev/docs/api/class-browsertype#browser-type-launch-persistent-context)、[Codex MCP](https://developers.openai.com/codex/mcp)。

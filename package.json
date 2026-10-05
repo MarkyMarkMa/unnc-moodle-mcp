@@ -1,0 +1,36 @@
+{
+  "name": "local-moodle-mcp",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "start": "node dist/src/server.js",
+    "login": "node dist/src/cli.js login",
+    "check": "node dist/src/cli.js check",
+    "sync": "node dist/src/cli.js sync",
+    "courses": "node dist/src/cli.js courses",
+    "select": "node dist/src/cli.js select",
+    "export-public": "node scripts/export-public.mjs",
+    "setup": "node dist/src/cli.js setup",
+    "settings": "node dist/src/cli.js settings",
+    "doctor": "node scripts/doctor.mjs",
+    "codex-config": "node dist/src/cli.js codex-config"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/client": "2.3.0",
+    "@modelcontextprotocol/server": "2.3.0",
+    "playwright": "1.63.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.4",
+    "typescript": "7.0.2"
+  },
+  "license": "MIT",
+  "description": "Local read-only UNNC Moodle MCP for macOS and Google Chrome"
+}

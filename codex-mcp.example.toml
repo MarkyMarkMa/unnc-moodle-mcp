@@ -1,0 +1,7 @@
+# Replace both absolute paths with your own. No login credentials belong here.
+[mcp_servers.moodle_local]
+command = "/ABSOLUTE/PATH/TO/node"
+args = ["/ABSOLUTE/PATH/TO/unnc-moodle-mcp/dist/src/server.js"]
+enabled = true
+startup_timeout_sec = 30
+tool_timeout_sec = 600

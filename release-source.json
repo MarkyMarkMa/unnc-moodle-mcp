@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "c1d163645680ed2f846ba202d3589461e9ea9b85",
+  "sourceSubdirectory": "moodle-mcp",
+  "dirty": false,
+  "finalCandidate": true,
+  "gitStatus": [],
+  "files": [
+    {
+      "path": "src/browser.ts",
+      "sha256": "a82878ce886f820626afb10c36a1897e3ddfd3ae2762f49a6e087de91be3cc1d",
+      "mode": 420
+    },
+    {
+      "path": "src/cli.ts",
+      "sha256": "ee9eba6988f407c35c7eba9f2654bd24a364ea7c13672590deabc5e1c337a124",
+      "mode": 420
+    },
+    {
+      "path": "src/config.ts",
+      "sha256": "c4e79e79a752757becd7fa1eaa216c0cbdfa58c010b884fcac29265dcd52da06",
+      "mode": 420
+    },
+    {
+      "path": "src/model.ts",
+      "sha256": "ae73c6de122a55c2912d693049e5f348a7a1bf41ddd5f73c532776806928e92d",
+      "mode": 420
+    },
+    {
+      "path": "src/parser.ts",
+      "sha256": "1e16a2ec7929c18f261431ff87c05079086a13726e5171f4240aed20f7b09dc1",
+      "mode": 420
+    },
+    {
+      "path": "src/safety.ts",
+      "sha256": "766aa1d9b337f3f08290b372eaad80d1c71469f544c9d328d80f903812b1fc44",
+      "mode": 420
+    },
+    {
+      "path": "src/server.ts",
+      "sha256": "2a115a67b74c5eb4cfc9a178e379afbaa9d5b61a38aa8546eec15692a01a0459",
+      "mode": 420
+    },
+    {
+      "path": "src/service.ts",
+      "sha256": "2be754daad909a26aac16fc739b211915f46a0878955be33df52855b5f8bc96b",
+      "mode": 420
+    },
+    {
+      "path": "src/sync.ts",
+      "sha256": "22295a7e0ff7ab0dbae48b2925bffc221ce4fe31aac2ee750124e4e15195b4fe",
+      "mode": 420
+    },
+    {
+      "path": "src/setup.ts",
+      "sha256": "e953427682bf7c97f579f73ab74e3ba40fd46f0253bc2f86d15e29984bf4dd7d",
+      "mode": 420
+    },
+    {
+      "path": "src/onboarding.ts",
+      "sha256": "a396ed6dc91db094b747e1330f24445ac3fd6af09efb776c8c2ca52121aeb549",
+      "mode": 420
+    },
+    {
+      "path": "test/config.test.ts",
+      "sha256": "410eb06606d3f9c8863f70c367c4d3c7ba21a15f9aca63cc7b7788d9eddbc518",
+      "mode": 420
+    },
+    {
+      "path": "test/core.test.ts",
+      "sha256": "97c2ec8974d826a386c2998e31624348c81d4644a416867b02576e229bc58a88",
+      "mode": 420
+    },
+    {
+      "path": "test/download.test.ts",
+      "sha256": "309875a17a92d0adfc289859e1f9cc5bb02b67ae17c7099424e55cde01e19427",
+      "mode": 420
+    },
+    {
+      "path": "test/mcp.test.ts",
+      "sha256": "23ffc573ec2854e1a75431e5dc1312daeb1eea1e65fb45c079e39adff083e0c9",
+      "mode": 420
+    },
+    {
+      "path": "test/pagination.test.ts",
+      "sha256": "2cbd2011403bdf2978a1c798e14ee21c01ba01f94776de11ecff4c125a7e5745",
+      "mode": 420
+    },
+    {
+      "path": "test/release.test.ts",
+      "sha256": "df728a84c98b7591a4b9d5f645afeb76052f96eb45426568e040a38832f296b4",
+      "mode": 420
+    },
+    {
+      "path": "test/setup.test.ts",
+      "sha256": "246ae7bfe759252365f7fc65abf23426a6de803787ba389469429d40ada78577",
+      "mode": 420
+    },
+    {
+      "path": "scripts/login.mjs",
+      "sha256": "b083a26df6e20e1788dd771a40a7a844144038a530b777501192d7359f1b1713",
+      "mode": 420
+    },
+    {
+      "path": "scripts/export-public.mjs",
+      "sha256": "eb30553c402df8db258d007b45238f9bef2cbb15b4f59fce43b0fba80de73199",
+      "mode": 420
+    },
+    {
+      "path": "scripts/setup.command",
+      "sha256": "a4c1da1918bca06120e18b364813a979aba885f132a51ca925d6a6f80c20c652",
+      "mode": 493
+    },
+    {
+      "path": "scripts/doctor.mjs",
+      "sha256": "8968db0bc1200a1e563de38d7b41003085f50a95c8368cf5b54a718b1a1511b6",
+      "mode": 420
+    },
+    {
+      "path": "docs/RELEASE.md",
+      "sha256": "d711d4a018a0bea5e1ed710d234d774cc3122902d4d2568a8f08229787765c37",
+      "mode": 420
+    },
+    {
+      "path": "docs/TESTING.md",
+      "sha256": "0880cc562d77e99459dc5b8026e3ccfc5082298a8dcc3e0cd1ab2a21fa7ffb2d",
+      "mode": 420
+    },
+    {
+      "path": "skills/unnc-moodle/SKILL.md",
+      "sha256": "749e89e7d44dd268fdb4ace02632906b9baf04619d798bf2f50e5d5227e34f12",
+      "mode": 420
+    },
+    {
+      "path": "package.json",
+      "sha256": "6d6d91bc81c5918f647425cf28d1ab17b8f6edda90a413214919e9fe8ca5f9e9",
+      "mode": 420
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "dcb2dfd593a6eb9fea26cb05a50e42acea145203f33ed07a2b3dd89a348f083c",
+      "mode": 420
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "22ccfcb6e85f8ff629769b5dae39ee5b03a0d93157e74979b526a989c6cd73a0",
+      "mode": 420
+    },
+    {
+      "path": "README.md",
+      "sha256": "1cfbbadca4e0da535f033aff800df7781e3eac717f6f2da996bb430b08056468",
+      "mode": 420
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "5494026cfd77e2d6c5b6da07d71e016b7defc0f80a53bb26cd010e38a4bdfb3c",
+      "mode": 420
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "32eb009daaf575f1ae49be0cc0cece85e6aa81772faa96c03a29b059084748e5",
+      "mode": 420
+    },
+    {
+      "path": "codex-mcp.example.toml",
+      "sha256": "0d11ed949d10b85aa13babfe001d22b0c13213e537411841d76da2cfc9d501b2",
+      "mode": 420
+    }
+  ]
+}
