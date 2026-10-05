@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "a0656579c105f32a4c211144ce90d0dce5ca4fe7",
+  "sourceCommit": "6c216e7b93c61f21dff923cc8590a7fe1c465141",
   "sourceSubdirectory": "moodle-mcp",
   "dirty": false,
   "finalCandidate": true,
@@ -43,7 +43,7 @@
     },
     {
       "path": "src/server.ts",
-      "sha256": "52827b208aab9a809d7de4c6f63c9db441b480751c00223811a030e246a8b42c",
+      "sha256": "e1cbfcfa423a81f5ce520db73aeff12da84f3e089674ae1cba1a62270ae3b762",
       "mode": 420
     },
     {
@@ -118,7 +118,7 @@
     },
     {
       "path": "scripts/export-public.mjs",
-      "sha256": "7a4a9a8fbbc29d2687ed3e8a5524792dd53461a053b3106b4933d10562e3a32a",
+      "sha256": "ad9d2a628431a64521f2d90aac81cd1202904b8074f73a83017734150c987fab",
       "mode": 420
     },
     {
@@ -132,8 +132,23 @@
       "mode": 420
     },
     {
+      "path": "docs/README.zh.md",
+      "sha256": "37df7dc85a8758403a130088c9b00f9213ac7faf7b2b306f96304ce6ce5e714c",
+      "mode": 420
+    },
+    {
+      "path": "docs/USAGE.md",
+      "sha256": "f1376c75ff963b971b0993ab2b3b1101c1226df65cb0370d796469f1eb8de4c9",
+      "mode": 420
+    },
+    {
+      "path": "docs/USAGE.zh.md",
+      "sha256": "6ba60d0e86dc7d177a9c474d0446fbd26bd6e3fd429aed722af3824b554e8c6f",
+      "mode": 420
+    },
+    {
       "path": "docs/RELEASE.md",
-      "sha256": "9d452af49b17cb62495ac7fdfa3966978fecb6102f2277d2f925d3d125493a4c",
+      "sha256": "0475dcce6d85260ee3acf1697ca23cbcc9c07039c621927b3054f531f20615e9",
       "mode": 420
     },
     {
@@ -148,12 +163,12 @@
     },
     {
       "path": "package.json",
-      "sha256": "12cb42c5bb99435627a3df344aa34016a87058674e98f3ad769ae591c21133f5",
+      "sha256": "7e776beb2417ccf1e72b4adf8b0c26d794ea3f11b99c23259196fac41ea72402",
       "mode": 420
     },
     {
       "path": "package-lock.json",
-      "sha256": "1ebc81740bb6c29a24ddb20ef399db5b1fc6096b83806ddebbe6d9deb0ecd78d",
+      "sha256": "8bb92fee2cec7fa142ef9fa0f7872a5649d4354f9814c97a8b439539b7d417c7",
       "mode": 420
     },
     {
@@ -163,7 +178,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "edb6255eb56c4fc327df434492defaeeec6029d8b0928f529436ea878dac06be",
+      "sha256": "9a1b1b876b92df056d64e742220703245a31702ba7798d6038e005eef2865670",
       "mode": 420
     },
     {

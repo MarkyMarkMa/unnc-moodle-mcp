@@ -12,7 +12,7 @@ export const PUBLIC_FILES = [
   'test/config.test.ts', 'test/core.test.ts', 'test/download.test.ts',
   'test/update.test.ts', 'test/mcp.test.ts', 'test/pagination.test.ts', 'test/release.test.ts', 'test/setup.test.ts',
   'scripts/update.mjs', 'scripts/login.mjs', 'scripts/export-public.mjs', 'scripts/setup.command', 'scripts/doctor.mjs',
-  'docs/RELEASE.md', 'docs/TESTING.md', 'skills/unnc-moodle/SKILL.md',
+  'docs/README.zh.md', 'docs/USAGE.md', 'docs/USAGE.zh.md', 'docs/RELEASE.md', 'docs/TESTING.md', 'skills/unnc-moodle/SKILL.md',
   'package.json', 'package-lock.json', 'tsconfig.json', 'README.md',
   'LICENSE', '.gitignore', 'codex-mcp.example.toml',
 ];

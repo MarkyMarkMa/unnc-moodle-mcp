@@ -19,14 +19,16 @@
 
 ## 每次发布都必须保留的安装与升级入口
 
-README 顶部只保留“新用户下载”和“老用户更新”两个入口，不按版本细分用户。老用户统一运行 npm run update；太旧没有命令或无法直接升级时，保留资料与设置后重装。下载链接指向 releases 列表，不写死当前版本，也不依赖跳过 prerelease 的 releases/latest。保持原安装路径和既有设置；需要迁移或不兼容变化时，在 README 和 Release 正文提供具体步骤，不宣称无需操作。
+README 默认使用英文，顶部提供中文文档切换；两种语言保持 Installation/安装、Update/更新两个入口，不按版本细分用户。老用户统一运行 npm run update；太旧没有命令或无法直接升级时，保留资料与设置后重装。下载链接指向 releases 列表，不写死当前版本，也不依赖跳过 prerelease 的 releases/latest。保持原安装路径和既有设置；需要迁移或不兼容变化时，在 README 和 Release 正文提供具体步骤，不宣称无需操作。
 
 每次发布还需：
 
 1. 运行完整测试，验证旧版入口、新版 npm run update、资料保留和失败回滚的相关反例。变更更新器时，在隔离 ZIP 安装目录实测旧版升级；不对个人资料目录做更新实验。
 2. Release 必须上传名为 unnc-moodle-mcp-vX.Y.Z.zip 的公开附件，前缀为 unnc-moodle-mcp/，含已提交来源的 release-source.json。版本必须与 package.json 一致；GitHub 资产必须提供 SHA-256 digest，否则现有更新器会拒绝。
-3. Release 正文开头链接 README 的“安装或更新”入口，只提示新用户下载和老用户 npm run update；不支持直接升级的旧版按 README 保留资料后重装。首次用户仍需本人登录/授权，已有用户更新后重新连接 MCP。
+3. Release 正文开头链接英文 README 与中文文档的 installation/update 锚点，只提示新用户下载和老用户 npm run update；不支持直接升级的旧版按 README 保留资料后重装。首次用户仍需本人登录/授权，已有用户更新后重新连接 MCP。
 4. 上传后使用隔离旧版安装跑公开更新入口，核对获取的是刚发布版本、资料哨兵和原路径保留，再运行 npm run update 确认最新版不重复更新。若验证失败，修复后重新发布，不把上传成功当作升级成功。
 5. 发布流程和更新器发生变化时，同步修订 README、skill、测试与白名单；避免只在聊天记录提供用户操作步骤。
 
 这些检查保证发布交付包含可验证的升级路径；不承诺未知网络、未来平台或未来不兼容版本能无需干预运行。
+
+英文 README 与 docs/README.zh.md、使用指南 docs/USAGE.md 与 docs/USAGE.zh.md 必须保持命令、支持范围和升级步骤一致。中文入口放在 docs/ 下，兼容 0.4.2 更新器的已有文件清单规则；不要未经兼容验证新增根目录发布文件。
