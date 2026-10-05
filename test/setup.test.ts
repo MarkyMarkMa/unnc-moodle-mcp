@@ -77,3 +77,22 @@ test('confirmed custom root and external course file survive restart; root overr
   const alias = join(root, 'alias-settings.json'); await symlink(settings, alias);
   assert.throws(() => execFileSync(process.execPath, ['--input-type=module', '-e', script], { env: { ...env, MOODLE_SETTINGS_FILE: alias }, stdio: 'pipe' }));
 });
+
+test('login holds operation lock, verifies authentication, and releases lock on cancellation', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'moodle-login-')); t.after(() => rm(root, { recursive: true, force: true }));
+  const cfg: Config = { ...config(), stateDir: join(root, 'state'), courses: [] };
+  let authenticated = false; let checks = 0;
+  const backend = { checkConnection: async () => { checks++; return { connected: true, authenticated, needsLogin: !authenticated }; }, close: async () => {} } as Backend;
+  const service = new MoodleService(cfg, () => backend);
+  let finish!: () => void;
+  const pending = service.login(() => new Promise<void>(resolve => { finish = resolve; }));
+  while (!finish) await new Promise(resolve => setTimeout(resolve, 5));
+  await assert.rejects(service.check(), (e: unknown) => e instanceof MoodleError && e.code === 'BUSY');
+  assert.equal(checks, 0); authenticated = true; finish();
+  assert.equal((await pending).authenticated, true);
+  authenticated = false;
+  assert.equal((await service.login(async () => {})).needsLogin, true);
+  await assert.rejects(service.login(async () => { throw new MoodleError('NEEDS_LOGIN'); }));
+  assert.equal((await service.check()).authenticated, false);
+  assert.deepEqual(cfg.courses, []);
+});

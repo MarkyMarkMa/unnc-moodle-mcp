@@ -15,7 +15,7 @@ description: 在 Codex 中设置和使用 UNNC Moodle 资料同步 MCP，包括�
 
 ## 首次设置与换课
 
-先调用 `get_sync_settings` 和 `check_connection`。返回 `authenticated: false`、`needsLogin: true` 或报 `NEEDS_LOGIN` 时，让用户在本地运行 `npm run login` 并亲自完成学校登录/MFA；不得索要密码、验证码、Cookie 或复制个人 Chrome/Edge。
+先调用 `get_sync_settings` 和 `check_connection`。返回 `authenticated: false`、`needsLogin: true` 或报 `NEEDS_LOGIN` 时，先告知用户将打开专用登录窗口，然后调用 `login` 工具；用户只需在浏览器中亲自完成学校登录/MFA，不要求其找项目目录或输入终端命令。工具最多等待五分钟；返回 authenticated: true 才继续原已授权任务，false 或错误时说明未完成，不自动循环重试。仅当旧 MCP 没有 login 工具时，具有本地终端能力的助手自行定位实际安装目录并启动 `npm run login`（等待完成、再调用 check_connection）；两种启动能力均不可用时才指导用户手动运行。登录窗口占用期间不调用其他 Moodle 工具；不得索要密码、验证码、Cookie 或复制个人 Chrome/Edge。
 
 调用 `list_courses`，把实际发现的课程名称展示给用户选择，不编造课程 ID、不自动选择所有课程。用户确认课程后调用 `select_courses`；它替换整个名单，增加课程时保留用户仍要同步的课程。空数组清空名单，不删除旧资料。
 

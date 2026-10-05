@@ -1,3 +1,5 @@
+import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { open, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -36,6 +38,22 @@ export class MoodleService {
   async shutdown(): Promise<void> {
     try { await this.activeBackend?.close(); }
     finally { if (this.ownedLock) await unlink(this.ownedLock).catch(() => {}); this.ownedLock = undefined; this.busy = false; this.activeBackend = undefined; }
+  }
+  login(run = () => this.launchLogin()) {
+    return this.withBackend(async b => { await run(); return b.checkConnection(); });
+  }
+  private async launchLogin(): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+      const child = spawn(process.execPath, [fileURLToPath(new URL('../../scripts/login.mjs', import.meta.url))], {
+        stdio: 'ignore', env: { ...process.env, MOODLE_PROFILE_DIR: this.cfg.profileDir },
+      });
+      const stop = () => { child.kill('SIGTERM'); };
+      const timer = setTimeout(stop, 300_000);
+      process.once('SIGINT', stop); process.once('SIGTERM', stop);
+      const cleanup = () => { clearTimeout(timer); process.off('SIGINT', stop); process.off('SIGTERM', stop); };
+      child.once('error', () => { cleanup(); reject(new MoodleError('INTERNAL')); });
+      child.once('exit', code => { cleanup(); if (code === 0) resolve(); else reject(new MoodleError('NEEDS_LOGIN')); });
+    });
   }
   check() { return this.withBackend(b => b.checkConnection()); }
   courses() { return this.withBackend(b => b.listCourses()); }

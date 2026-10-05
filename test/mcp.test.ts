@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Client } from '@modelcontextprotocol/client';
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, rm, writeFile, cp, symlink, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -14,7 +14,10 @@ test('official MCP client discovers tools and invokes actual server with validat
   const client = new Client({ name: 'moodle-test-client', version: '0.1.0' });
   try {
     await client.connect(transport); const list = await client.listTools();
-    assert.deepEqual(list.tools.map(t => t.name).sort(), ['configure_organization', 'confirm_setup', 'select_courses', 'check_connection', 'download_resource', 'get_sync_settings', 'list_courses', 'list_resources', 'sync_courses'].sort());
+    assert.deepEqual(list.tools.map(t => t.name).sort(), ['login', 'configure_organization', 'confirm_setup', 'select_courses', 'check_connection', 'download_resource', 'get_sync_settings', 'list_courses', 'list_resources', 'sync_courses'].sort());
+    const loginTool = list.tools.find(t => t.name === 'login')!;
+    assert.equal(loginTool.annotations?.readOnlyHint, false);
+    assert.equal(loginTool.annotations?.idempotentHint, false);
     const result = await client.callTool({ name: 'get_sync_settings', arguments: {} });
     assert.equal(result.isError, undefined); assert.match(JSON.stringify(result), /Other student course/);
     const organize = await client.callTool({ name: 'sync_courses', arguments: { mode: 'organize' } });
@@ -58,12 +61,33 @@ test('stdio startup migrates legacy storage and reports preserved confirmation w
   const client = new Client({ name: 'migration-test-client', version: '0.1.0' });
   try {
     await client.connect(new StdioClientTransport({ command: process.execPath, env, args: [fileURLToPath(new URL('../src/server.js', import.meta.url))] }));
-    assert.equal((await client.listTools()).tools.length, 9);
+    assert.equal((await client.listTools()).tools.length, 10);
     const response = await client.callTool({ name: 'get_sync_settings', arguments: {} });
     assert.equal(response.isError, undefined);
     const settings = JSON.parse((response.content as Array<{text:string}>)[0]!.text);
     assert.equal(settings.setupConfirmed, true); assert.equal(settings.readyToSync, true);
     assert.equal(settings.coursesFile, join(root, '_moodle', 'courses.json')); assert.equal(settings.directories.state, join(root, '_moodle', 'state'));
     assert.equal(await readFile(join(root, 'materials', 'note.txt'), 'utf8'), 'personal note');
+  } finally { await client.close(); }
+});
+
+
+test('stdio login launches the dedicated script without leaking stdout and reports unfinished authentication', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'moodle-login-client-')); t.after(() => rm(root, { recursive: true, force: true }));
+  const program = join(root, 'program'); await mkdir(join(program, 'scripts'), { recursive: true });
+  await cp(fileURLToPath(new URL('../src', import.meta.url)), join(program, 'dist/src'), { recursive: true });
+  await writeFile(join(program, 'package.json'), '{"type":"module"}');
+  await symlink(fileURLToPath(new URL('../../node_modules', import.meta.url)), join(program, 'node_modules'), process.platform === 'win32' ? 'junction' : 'dir');
+  const marker = join(root, 'launched.txt'); const profile = join(root, 'profile');
+  await writeFile(join(program, 'scripts/login.mjs'), `import { writeFile } from 'node:fs/promises'; await writeFile(${JSON.stringify(marker)}, process.env.MOODLE_PROFILE_DIR); console.log('must not enter MCP stdout');`);
+  const env = { ...Object.fromEntries(Object.entries(process.env).filter((x): x is [string, string] => x[1] !== undefined)), MOODLE_DATA_DIR: join(root, 'data'), MOODLE_SETTINGS_FILE: join(root, 'settings.json'), MOODLE_PROFILE_DIR: profile, MOODLE_COURSES_FILE: join(root, 'courses.json') };
+  const client = new Client({ name: 'login-client', version: '0.1.0' });
+  try {
+    await client.connect(new StdioClientTransport({ command: process.execPath, env, args: [join(program, 'dist/src/server.js')] }));
+    const result = await client.callTool({ name: 'login', arguments: {} });
+    assert.equal(result.isError, undefined);
+    assert.deepEqual(JSON.parse((result.content as Array<{text:string}>)[0]!.text), { connected: true, authenticated: false, needsLogin: true });
+    assert.equal(await readFile(marker, 'utf8'), profile);
+    assert.equal((await client.callTool({ name: 'check_connection', arguments: {} })).isError, undefined);
   } finally { await client.close(); }
 });

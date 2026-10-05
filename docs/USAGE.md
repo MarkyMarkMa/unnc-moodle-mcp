@@ -90,7 +90,7 @@ Inspect `failed`, `skipped`, `needsLogin`, and `stoppedReason` in the operation 
 | Result | Action |
 |---|---|
 | `SETUP_REQUIRED` | Confirm the intended data directory and course selection through setup. |
-| `NEEDS_LOGIN` | Run `npm run login` and complete sign-in and MFA personally. |
+| `NEEDS_LOGIN` | Ask the assistant to call `login` to open the dedicated browser; complete sign-in and MFA personally. It waits up to five minutes and verifies authentication. Use `npm run login` only as a fallback. |
 | `RATE_LIMITED` | Stop the batch and retry later; do not immediately loop. |
 | `PROFILE_BUSY` | Check the dedicated browser and other processes; the code does not prove which process caused the failure. |
 | `LOCAL_IO` | Check disk space, permissions, and local paths. |

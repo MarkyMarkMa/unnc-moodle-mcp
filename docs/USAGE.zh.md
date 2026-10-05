@@ -125,7 +125,7 @@ macOS 和 Windows 升级到 0.4.5 前均须停止所有旧 MCP/CLI 进程。新�
 
 专用浏览器位于 `~/Library/Application Support/moodle-mcp/browser-profile`，不读取或复制日常 Chrome/Edge。目录700、会话600权限，只额外保存 Moodle 域 Cookie；整个专用 profile 可能有正常 SSO 缓存，应视为敏感。文件权限不等于加密。
 
-NEEDS_LOGIN 时停止操作，运行 `npm run login` 亲自认证。关闭异常或 Chrome 缺失应结合 doctor 排查，PROFILE_BUSY 不能保证就是另一个进程占用。撤销时停止服务/专用窗口，删除本项目专用 profile，并按学校方式注销学校会话；删除本机文件不能保证撤销其他副本。不要删除个人 Chrome/Edge。
+NEEDS_LOGIN 时停止当前操作，由助手先告知再调用 `login` 打开专用浏览器，用户亲自完成学校认证/MFA。工具最多等待五分钟，返回 authenticated: true 才继续原已授权操作；未完成不自动循环重试。旧 MCP 无此工具时，具备终端能力的助手代为启动 `npm run login`；无法代为启动时才让用户手动运行。关闭异常或 Chrome 缺失应结合 doctor 排查，PROFILE_BUSY 不能保证就是另一个进程占用。撤销时停止服务/专用窗口，删除本项目专用 profile，并按学校方式注销学校会话；删除本机文件不能保证撤销其他副本。不要删除个人 Chrome/Edge。
 
 仅访问已选择、账户有权限的课程，不提交作业、发消息或修改学校内容。外链只报告，不携带学校凭据访问；登录窗口允许学校正常 SSO。访问会被网站正常记录。不要把 profile、会话、课程名单、课件或私有验证记录提交 GitHub。
 

@@ -76,7 +76,7 @@ npm run codex-config
 
 macOS 和 Windows 设置向导均提供推荐的 skill 安装选项；老用户也可单独运行 `npm run install-skill`，无需重新登录学校。默认安装到 `~/.agents/skills/unnc-moodle`；已有旧 `~/.codex/skills/unnc-moodle` 时复用其位置；配置 `CODEX_HOME` 时安装到其 `skills/unnc-moodle`。相同版本不重复安装，不同或不安全的现有 skill 不覆盖；请先备份到技能目录之外并核对差异。skill 冲突不会撤销已完成的 MCP 设置。附带 skill 的说明为中文，MCP 工具可处理英文或中文请求。
 
-重启 Codex 后检查 `get_sync_settings` 与 `check_connection`。下载前必须确认保存目录并选择课程。登录过期时运行 `npm run login`，由用户本人完成认证。
+重启 Codex 后检查 `get_sync_settings` 与 `check_connection`。下载前必须确认保存目录并选择课程。登录过期时由 Codex 调用 `login` MCP 工具打开专用浏览器，用户只需在窗口中亲自完成学校登录和 MFA；工具最多等待五分钟，检查认证结果后再继续。`npm run login` 保留为工具不可用时的备用入口。
 
 ## 使用
 

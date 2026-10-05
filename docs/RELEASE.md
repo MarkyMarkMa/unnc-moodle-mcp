@@ -46,3 +46,5 @@ Windows 实验性预发布仍使用与 package.json 一致的数字版本号，�
 0.4.7：Windows 改为 Edge，登录、同步、doctor 与 DOM 测试一致；旧 Chrome profile 不导入不删除，需重新登录。显式 profile 覆盖使用新 Edge 目录。仍为未实测的 Windows 实验性预发布。
 
 0.4.8：两种目录模式、持久分类规则以及单文件 Moodle 标题命名统一交付。升级前停止旧进程，重连新版并回读 organization；用 organize 整理已有未修改可读副本，保留批注和历史。公开包包含 routing 源码及相关反例，不包含用户目录映射、真实课件、课程记录和本地整理报告。Windows Edge 继续保持实验性，不将本次 macOS 验证算作 Windows 实测。
+
+0.4.9：新增 login MCP 工具，由助手启动专用浏览器、用户本人完成登录/MFA。旧客户端保留 CLI 备用入口。升级后重连 MCP 才获得新工具；旧独立 skill 不自动替换，需备份并更新旧 skill，避免旧规则继续要求手动运行终端命令。

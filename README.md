@@ -76,7 +76,7 @@ Add the printed `[mcp_servers.moodle_local]` block to your Codex MCP configurati
 
 Setup offers the recommended skill installation on macOS and Windows. Existing users can run `npm run install-skill` separately; it does not require school login. The installer uses `~/.agents/skills/unnc-moodle`, reuses an existing legacy `~/.codex/skills/unnc-moodle`, or uses `CODEX_HOME/skills/unnc-moodle` when configured. Identical installations are left alone; differing or unsafe existing skills are not overwritten. Back up a differing skill outside the skills directory and review it before replacing it. A skill conflict does not undo completed MCP setup. The supplied skill instructions are in Chinese; the MCP tools accept the same requests in English or Chinese.
 
-Restart Codex, then check `get_sync_settings` and `check_connection`. Downloads require a confirmed materials directory and selected courses. If login has expired, run `npm run login` and complete authentication yourself.
+Restart Codex, then check `get_sync_settings` and `check_connection`. Downloads require a confirmed materials directory and selected courses. If login has expired, ask Codex to open the dedicated login browser using the `login` MCP tool. Complete sign-in and MFA in that browser; Codex verifies the result before continuing. The tool waits up to five minutes. `npm run login` remains a fallback for clients without the tool.
 
 ## Usage
 

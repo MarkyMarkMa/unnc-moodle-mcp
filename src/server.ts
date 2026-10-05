@@ -9,8 +9,8 @@ import { selectCourses, confirmSetup, configureOrganization } from './setup.js';
 process.umask(0o077);
 const service = new MoodleService();
 for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, () => { void service.shutdown().finally(() => process.exit(0)); });
-const server = new McpServer({ name: 'local-moodle-mcp', version: '0.4.8' }, {
-  instructions: 'Read-only Moodle course materials. Download/sync only courses explicitly selected in the local courses.json configuration. External links are reported, never followed with school credentials. Before downloads, explicitly confirm the directory and course selection through setup. Manual one-shot sync only. Never submit assignments, send messages, change accounts, or expose credentials. NEEDS_LOGIN requires the user to run npm run login. Downloads keep old versions. Requests are serial and paced.',
+const server = new McpServer({ name: 'local-moodle-mcp', version: '0.4.9' }, {
+  instructions: 'Read-only Moodle course materials. Download/sync only courses explicitly selected in the local courses.json configuration. External links are reported, never followed with school credentials. Before downloads, explicitly confirm the directory and course selection through setup. Manual one-shot sync only. Never submit assignments, send messages, change accounts, or expose credentials. On NEEDS_LOGIN, tell the user you will open the dedicated login browser, then call login. The user enters school credentials and MFA personally; never request them. Only offer npm run login when the login tool is unavailable. Check the authenticated result before continuing. Downloads keep old versions. Requests are serial and paced.',
 });
 const wrap = async (action: () => Promise<unknown>) => {
   try { return { content: [{ type: 'text' as const, text: JSON.stringify(await action()) }] }; }
@@ -18,6 +18,7 @@ const wrap = async (action: () => Promise<unknown>) => {
 };
 const read = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true };
 const write = { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true };
+server.registerTool('login', { description: 'Open the dedicated Moodle browser and wait up to five minutes for the user to sign in and complete MFA personally. Tell the user before calling. Returns verified connection status; authenticated false is not success. Does not download or change course settings. Do not run concurrently with other Moodle operations.', inputSchema: z.object({}), annotations: { ...write, idempotentHint: false } }, () => wrap(() => service.login()));
 server.registerTool('check_connection', { description: 'Check Moodle connection and dedicated login session; never return credentials.', inputSchema: z.object({}), annotations: read }, () => wrap(() => service.check()));
 server.registerTool('list_courses', { description: 'List enrolled My Modules courses including hidden courses. Only explicitly approved IDs may be synchronized.', inputSchema: z.object({}), annotations: read }, () => wrap(() => service.courses()));
 server.registerTool('list_resources', { description: 'List visible resources for an approved course, with observed IDs, titles, types and available format metadata.', inputSchema: z.object({ courseId: z.number().int().positive() }), annotations: read }, ({ courseId }) => wrap(() => service.resources(courseId)));

@@ -5,7 +5,7 @@ export type ErrorCode = 'NEEDS_LOGIN' | 'FORBIDDEN' | 'NOT_FOUND' | 'NETWORK' | 
   'EXTERNAL_LINK' | 'UNSUPPORTED' | 'PARSE_FAILED' | 'PROFILE_BUSY' | 'BUSY' |
   'PATH_UNSAFE' | 'FILE_TOO_LARGE' | 'INVALID_INPUT' | 'STATE_INVALID' | 'LOCAL_IO' | 'INTERNAL' | 'SETUP_REQUIRED' | 'STORAGE_CONFLICT';
 const messages: Record<ErrorCode, string> = {
-  NEEDS_LOGIN: '专用会话未登录或已过期，请运行 npm run login 亲自重新认证。',
+  NEEDS_LOGIN: '专用会话未登录、已过期或登录未完成。请助手调用 login 打开专用浏览器，由本人完成学校登录/MFA 重新认证；工具不可用时才运行 npm run login。',
   FORBIDDEN: '账户没有访问该资源的权限。', NOT_FOUND: '远端资源已不存在。',
   NETWORK: '网络请求失败，可稍后重试。', RATE_LIMITED: '网站要求降低请求频率，请稍后重试。',
   EXTERNAL_LINK: '资源指向外部域名；已停止，不会携带学校凭据访问。',
