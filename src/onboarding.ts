@@ -7,7 +7,7 @@ import { runInstaller } from '../../scripts/install-skill.mjs';
 import { config } from './config.js';
 import { MoodleService } from './service.js';
 import { MoodleError } from './model.js';
-import { confirmSetup, selectCourses } from './setup.js';
+import { confirmSetup, selectCourses, configureOrganization } from './setup.js';
 
 export async function onboarding(login: () => Promise<number>): Promise<void> {
   if (!stdin.isTTY) throw new MoodleError('INVALID_INPUT');
@@ -41,9 +41,15 @@ export async function onboarding(login: () => Promise<number>): Promise<void> {
     const indexes = answer.split(',').map(v => Number(v.trim()));
     if (indexes.some(i => !Number.isSafeInteger(i) || i < 1 || i > courses.length) || new Set(indexes).size !== indexes.length) throw new MoodleError('INVALID_INPUT');
     const chosen = indexes.map(i => courses[i - 1]!);
-    console.log(JSON.stringify({ courses: chosen.map(c => c.name), materials: service.cfg.materialsDir, coursesFile: service.cfg.coursesFile, keepOldVersions: true, manualSyncOnly: true }, null, 2));
+    const mode = (await rl.question('保存方式：1 按课程/栏目自动建目录；2 合并到已有分类文件夹 [1]：')).trim() || '1';
+    if (!['1', '2'].includes(mode)) throw new MoodleError('INVALID_INPUT');
+    const existingRoot = mode === '2' ? (await rl.question('已有课程文件夹共同的根目录（绝对路径）：')).trim() : undefined;
+    if (mode === '2' && (!existingRoot || !isAbsolute(existingRoot))) throw new MoodleError('INVALID_INPUT');
+    if (mode === '2') console.log('分类规则稍后在 Codex 中确认；确认前不下载未分类资料。已有文件不会被自动接管或迁移。');
+    console.log(JSON.stringify({ courses: chosen.map(c => c.name), materials: service.cfg.materialsDir, organization: mode === '2' ? { mode: 'existing', root: existingRoot } : { mode: 'managed' }, coursesFile: service.cfg.coursesFile, keepOldVersions: true, manualSyncOnly: true }, null, 2));
     if ((await rl.question('确认保存这份设置？输入 yes：')).trim().toLowerCase() !== 'yes') return;
     await selectCourses(service, chosen.map(c => c.id));
+    await configureOrganization(service, mode === '2' ? { mode: 'existing', root: resolve(existingRoot!), rules: [] } : { mode: 'managed' });
     await confirmSetup(service, service.cfg.dataDir);
     rl.close();
     try { await runInstaller([]); }

@@ -1,3 +1,4 @@
+import { routeFile, checkRouteDirectory } from './routing.js';
 import { constants } from 'node:fs';
 import { copyFile, link, unlink, rmdir, rename, readdir } from 'node:fs/promises';
 import { dirname, join, relative, parse } from 'node:path';
@@ -46,23 +47,34 @@ export async function publishLatest(cfg: Config, file: RemoteFile, state: Manife
     assigned.add(name.toLocaleLowerCase());
     if (c.id === file.courseId) course = name;
   }
-  const parts = [course, safeFilename(file.sectionName || 'General')];
+  const route = routeFile(cfg, file, record);
+  if (route.reason) return;
+  const root = route.root;
+  if (route.directory) await checkRouteDirectory(root, route.directory);
+  const parts = route.directory ? route.directory.split(/[\\/]/) : [course, safeFilename(file.sectionName || 'General')];
   if (file.relativeFolder !== undefined) {
     parts.push(safeFilename(file.title));
     for (const part of file.relativeFolder.split('/').filter(Boolean)) parts.push(safeFilename(part));
   }
-  const dir = await safeDirectory(cfg.materialsDir, parts.join('/'));
-  const old = record.readablePath ? await regularFile(cfg.materialsDir, record.readablePath) : undefined;
+  const dir = await safeDirectory(root, parts.join('/'), cfg.routing?.mode === 'existing');
+  const old = record.readablePath && (record.readableRoot ?? cfg.materialsDir) === root ? await regularFile(root, record.readablePath) : undefined;
   const owned = !!old && !!record.readableHash && await fileHash(old) === record.readableHash;
-  const preferred = join(dir, latest.filename);
+  // Single-file Moodle titles carry teaching meaning; keep the downloaded extension.
+  // Folder child filenames are already meaningful and must remain distinct.
+  const extension = parse(latest.filename).ext;
+  const title = safeFilename(file.title);
+  const filename = file.relativeFolder === undefined && file.title.trim() && !/^(file|resource|download)$/i.test(file.title.trim())
+    ? safeFilename(title.toLocaleLowerCase().endsWith(extension.toLocaleLowerCase()) ? title : title + extension)
+    : latest.filename;
+  const preferred = join(dir, filename);
   let destination = preferred;
   // Reuse the previous collision name when it still belongs in this folder.
-  if (old && owned && dirname(old) === dir && record.readableFilename === latest.filename) destination = old;
-  const stem = parse(latest.filename);
+  if (old && owned && dirname(old) === dir && record.readableFilename === filename) destination = old;
+  const stem = parse(filename);
   for (let n = 2; ; n++) {
-    const existing = await regularFile(cfg.materialsDir, relative(cfg.materialsDir, destination).split('\\').join('/'));
+    const existing = await regularFile(root, relative(root, destination).split('\\').join('/'));
     const caseConflict = (await readdir(dir)).some(name => name.toLocaleLowerCase() === parse(destination).base.toLocaleLowerCase() && name !== parse(destination).base);
-    const claimed = caseConflict || Object.values(state.files).some(f => f.key !== file.key && f.readablePath?.toLocaleLowerCase() === relative(cfg.materialsDir, destination).split('\\').join('/').toLocaleLowerCase());
+    const claimed = caseConflict || Object.values(state.files).some(f => f.key !== file.key && (f.readableRoot ?? cfg.materialsDir) === root && f.readablePath?.toLocaleLowerCase() === relative(root, destination).split('\\').join('/').toLocaleLowerCase());
     if (!claimed && (!existing || (owned && existing === old))) break;
     let prefix = stem.name;
     const suffix = ` (${n})${stem.ext}`;
@@ -85,7 +97,7 @@ export async function publishLatest(cfg: Config, file: RemoteFile, state: Manife
       await rename(temporary, destination);
     } else await link(temporary, destination);
     published = true;
-    const changed = { ...record, readablePath: relative(cfg.materialsDir, destination).split('\\').join('/'), readableHash: latest.sha256, readableFilename: latest.filename };
+    const changed = { ...record, routingDirectory: route.directory, readableRoot: root, readablePath: relative(root, destination).split('\\').join('/'), readableHash: latest.sha256, readableFilename: filename };
     try { await commit(changed); }
     catch (e) {
       if (backedUp) { await rename(backup, destination); backedUp = false; }
@@ -94,7 +106,7 @@ export async function publishLatest(cfg: Config, file: RemoteFile, state: Manife
       throw e;
     }
     if (old && owned && old !== destination && await fileHash(old) === record.readableHash) {
-      await unlink(old); await pruneEmpty(cfg.materialsDir, old);
+      await unlink(old); if (cfg.routing?.mode !== 'existing') await pruneEmpty(root, old);
     }
     return destination;
   } catch (e) {

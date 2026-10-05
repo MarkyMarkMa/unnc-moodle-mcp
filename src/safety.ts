@@ -40,8 +40,12 @@ export async function privateDirectory(path: string): Promise<void> {
   if (!stat.isDirectory() || stat.isSymbolicLink()) throw new MoodleError('PATH_UNSAFE');
   await chmod(path, 0o700);
 }
-export async function safeDirectory(root: string, rel: string): Promise<string> {
-  const out = inside(root, rel); await privateDirectory(root);
+export async function safeDirectory(root: string, rel: string, existingRoot = false): Promise<string> {
+  const out = inside(root, rel);
+  if (existingRoot) {
+    const s = await lstat(root);
+    if (!s.isDirectory() || s.isSymbolicLink()) throw new MoodleError('PATH_UNSAFE');
+  } else await privateDirectory(root);
   let current = resolve(root);
   for (const part of relative(root, out).split(sep)) {
     current = join(current, part);

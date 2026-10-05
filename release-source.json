@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "a975aed3d2b32f971ebcdb95bb15858e66b4d53b",
+  "sourceCommit": "4ab064ad33a85fef6bfbb6db31ec2d813d518423",
   "sourceSubdirectory": "moodle-mcp",
   "dirty": false,
   "finalCandidate": true,
@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "src/browser.ts",
-      "sha256": "ba4de2b61b4fca02970f55c32624811c756fcfefa589374879224bd63b8a936a",
+      "sha256": "bc3231d08939c7cc22ea3e9e9574ba0ae9c0fdee19321e642cd982351ad4e8d6",
       "mode": 420
     },
     {
@@ -18,42 +18,47 @@
     },
     {
       "path": "src/config.ts",
-      "sha256": "cda3e5fc95e13353251058f2e8ebba3911dc1453a743ebc35e9e90113b4f0486",
+      "sha256": "d43cd9728369306eec8a96bb484c8e0f0d8853e673c66ce897b1fd43fef1753b",
       "mode": 420
     },
     {
       "path": "src/model.ts",
-      "sha256": "625433ed5209f0d25687115402d013162b6ed6d228ebcecb770beb8d86d31997",
+      "sha256": "097af092d3552e995248a3f9e7c988d6a841a0f31f991546c1f383db93aec591",
       "mode": 420
     },
     {
       "path": "src/parser.ts",
-      "sha256": "42f35940f59e7a4d8a9bcebbd4f0db4e362b96c61657f7bd1b0827a54be1ee9d",
+      "sha256": "7cb17a4686ae336295aca594f5382480bb61c08cb7e1e118009a3e1d98006e1f",
+      "mode": 420
+    },
+    {
+      "path": "src/routing.ts",
+      "sha256": "95622a4ebda567226e224505edc2721b6922bfeac53a3cde01ca35ac5bdf94bd",
       "mode": 420
     },
     {
       "path": "src/layout.ts",
-      "sha256": "bab50b0dab555c64502045eefeb4c0ca7100aee641aebb1c806ea5fe4936d783",
+      "sha256": "dcbfcd0df7673886714548efcbace32b142b59942b3350a02a6a2d737db4118d",
       "mode": 420
     },
     {
       "path": "src/safety.ts",
-      "sha256": "766aa1d9b337f3f08290b372eaad80d1c71469f544c9d328d80f903812b1fc44",
+      "sha256": "ef12013d35dece3579b2638589fbbc68ced5392278d7b7270ad4510536c32349",
       "mode": 420
     },
     {
       "path": "src/server.ts",
-      "sha256": "d26b41b21fe5f51516b7f93beb262219c1e03a4f81ddfef4e5237f012b610bca",
+      "sha256": "6512dd5dc0c3bc7984cc96a86abf213f60edf732eb9ec379fca6be0acc4aefb0",
       "mode": 420
     },
     {
       "path": "src/service.ts",
-      "sha256": "e18cf899dbb0d66929308a67f66d20f0e56ad10592a4af982bfb1d5b28d779b8",
+      "sha256": "fc913c0142be80043b4941026586db1d8779acdf68b96ebb848c28de1581daf4",
       "mode": 420
     },
     {
       "path": "src/sync.ts",
-      "sha256": "d5d59fdad4017962d2181c38b8c53bdb013d0d618894d42206735cdc46ac0728",
+      "sha256": "584023d5106faf18c4c68ceec8f45dc36946f7fc126681e50860d97eb052d758",
       "mode": 420
     },
     {
@@ -68,12 +73,12 @@
     },
     {
       "path": "src/setup.ts",
-      "sha256": "284b1bef5eee93a70fd4d293bd8f4f0a693e9800a802f991acae59f83a06c07b",
+      "sha256": "b8feec861307b4169c1e9f20ea6f01919b465052959305cf865b040a7e727286",
       "mode": 420
     },
     {
       "path": "src/onboarding.ts",
-      "sha256": "7dc2b4b9bf52ac84abb8290e6053582f6a3d543aa9b63fa5cf703f9de5018b91",
+      "sha256": "334cbbe09385b96e9d4dbf5b447f5741b0907d840e1ed44ace6061ced9f99cfc",
       "mode": 420
     },
     {
@@ -93,7 +98,7 @@
     },
     {
       "path": "test/core.test.ts",
-      "sha256": "be885b7b4ca2336e3f3590df6bf84b91ce37d2678caa398d4a72a96c2f72798f",
+      "sha256": "4a34a921688a19b6a3991ac69bbce1d485c073ccc12cfbf661b3ec27075c981c",
       "mode": 420
     },
     {
@@ -108,12 +113,12 @@
     },
     {
       "path": "test/mcp.test.ts",
-      "sha256": "46073b40ba858c006ee08ee4ee6be7ec265f023a28c4ac1a2481b25d0742df16",
+      "sha256": "46a7ed24c2bab475287df25a563d3827d707193141cc05a20af6bb7d3e3e2d41",
       "mode": 420
     },
     {
       "path": "test/pagination.test.ts",
-      "sha256": "c392221706c92ea46685eb4d36db2a82bc00215cc6da9dd99079cf593b8e43c2",
+      "sha256": "87f5f5db98197fe1a33b0f986f2d715fb2dae5f99a619928743b4b5d87e872a9",
       "mode": 420
     },
     {
@@ -148,7 +153,7 @@
     },
     {
       "path": "scripts/export-public.mjs",
-      "sha256": "aa0cc90d6de2faa38ce34a596aeaca9f3ad772fcda970c00e8ad61e07faa13b0",
+      "sha256": "1cb50263c0297ac04de3e6ed431f24f52068d94618d06e9af526077f91d4ae72",
       "mode": 420
     },
     {
@@ -168,42 +173,42 @@
     },
     {
       "path": "docs/README.zh.md",
-      "sha256": "86382a405b34f4c0fc666b960fb986447de77025c28dddbfa4761cc5bca53e66",
+      "sha256": "53b73716eb6b8e1ead6c0f0a9c687b4b3ae4680041b7d46f133fc3e4be9779bf",
       "mode": 420
     },
     {
       "path": "docs/USAGE.md",
-      "sha256": "0df171aad5dc3af9149ee3d0d1f250e5a4c7323cf192a2df988e52b9fe19aae5",
+      "sha256": "818a470566fac6b13d10f5342b326305b17a94ca608d382694f951c77c739ace",
       "mode": 420
     },
     {
       "path": "docs/USAGE.zh.md",
-      "sha256": "19619d9b43d3b71e89480a6a6e0ae2143fe0c2c0934359932f8863a1c32ec238",
+      "sha256": "27ecec461b1850e61cd1d3274d9186da115de69f4f6a5d1082ce7a645cc9f56d",
       "mode": 420
     },
     {
       "path": "docs/RELEASE.md",
-      "sha256": "612ee4eb78b4f1e248a887c75835edab692dbd3ca548a51fd11602047e786c63",
+      "sha256": "64420773ac61a028b2c6e22dd95721f17a8b11d134e146abc7ee38ffada96d4b",
       "mode": 420
     },
     {
       "path": "docs/TESTING.md",
-      "sha256": "0bed0afcbb148081d52d17de1b85970cac385c79e21c80145c3182d8d49114e7",
+      "sha256": "b47d96818194f5d63b4f0f2b2cdf849eee4256cbaa2de8d0c6f284f5208542d9",
       "mode": 420
     },
     {
       "path": "skills/unnc-moodle/SKILL.md",
-      "sha256": "aefb254e8129d0730c5147af198c4be62389743d78d92c14cbf2b85693bcae71",
+      "sha256": "c8045af46787e73f731a7af774fdfb91022ff8ee50e37edb1e743049165416a4",
       "mode": 420
     },
     {
       "path": "package.json",
-      "sha256": "e482c9e284a66dd9cbeeed239119d2d42f1fa72d9a699430836ad23d8cb4d5c9",
+      "sha256": "a7398236f288858adc9b6eec6ee9a8da9928ae03fb0d2c6f36632fce7d523e0e",
       "mode": 420
     },
     {
       "path": "package-lock.json",
-      "sha256": "2cf6bd91439330c51042a2a98575c9d367733a535f956cef5e2bb0d4cc58ba1e",
+      "sha256": "ec126a2d9e20ace68bb478eeddb325814e2da882c1c834e26f5194da4611b78b",
       "mode": 420
     },
     {
@@ -213,7 +218,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "9a85f278e2b31ee6d9bfd99b90529a6b2988a1010cbddcd5abbbfaf42041cf1c",
+      "sha256": "22f39bcab19cbff8a5a99ba89cd1b2393bdefc46fc2207220e0756bb989a86df",
       "mode": 420
     },
     {

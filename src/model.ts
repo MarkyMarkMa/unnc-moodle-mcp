@@ -47,11 +47,13 @@ export interface Resource {
   courseId: number; moduleId: number; title: string; type: ResourceType; url: string;
   format?: string; modifiedAt?: string;
   sectionName?: string;
+  description?: string;
 }
 export interface RemoteFile {
   courseId: number; moduleId: number; key: string; title: string; url: string;
   remotePath: string; filename?: string;
   sectionName?: string;
+  description?: string;
   /** Nested directories inside a published Moodle folder, excluding its title and filename. */
   relativeFolder?: string;
 }
@@ -72,6 +74,8 @@ export interface Version { version: number; relativePath: string; filename: stri
 export interface StoredFile {
   key: string; courseId: number; moduleId: number; remotePath: string; title: string;
   etag?: string; lastModified?: string; mime?: string; present: boolean; lastCheckedAt: string; versions: Version[];
+  routingDirectory?: string;
+  readableRoot?: string;
   readablePath?: string; readableHash?: string; readableFilename?: string;
 }
 export interface Manifest { schemaVersion: 1; files: Record<string, StoredFile>; }

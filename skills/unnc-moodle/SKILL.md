@@ -40,3 +40,11 @@ description: 在 Codex 中设置和使用 UNNC Moodle 资料同步 MCP，包括�
 已验证 UNNC 的 Nottingham Moodle、macOS + Chrome；Windows + Edge 有实验性适配但尚待真实验证，不宣称完整支持。Windows 暂用手动升级，不运行仅支持 macOS 的自动升级。标准 stdio 接入可供其他客户端评估，但不要宣称未验证的客户端、其他学校或平台已经兼容。不创建用户未要求的定时任务。
 
 Windows 从 Chrome 版升级后使用 edge-profile，不导入旧浏览器 profile，需本人重新登录。MOODLE_PROFILE_DIR 覆盖应指向新的 Edge 专用目录。课程名单和资料保留。
+
+## 保存模式与已有分类目录（0.4.8）
+
+首次设置展示两种方式：managed 按课程/栏目自动建目录；existing 沿用已有课程文件夹。existing 模式须查看用户授权的实际本地目录、list_resources 的实际资源标题及 description，先展示分类对应关系并取得用户确认，再调用 configure_organization，confirmed: true。传入共同的已存在绝对 root、rules；每条包含 courseId、root 下已存在的相对 directory，以及已观察 moduleIds 或用户确认的 keywords。工具替换完整规则，先回读设置并保留其他仍需使用的规则，不猜 ID。具体资源归属优先于关键词；混放的 Moodle 栏目可逐资源分类。第一次分类成功后记住目录，改名继续沿用；纠正分类用明确 moduleIds。
+
+关键词是不区分大小写的字面包含，匹配标题、可用描述、栏目、文件名。没有 PDF 内容推理能力，不凭上下顺序、Quiz 或 Excel 类型推断 seminar。不确定资源让用户确认后保存具体归属；新资源未匹配或规则冲突时 skipped，不说已全部同步。初始 existing 模式可空规则，确认前不下载。
+
+已有文件不自动接管；同名避让，保留用户笔记。目标目录移动会报失败，先更新规则；换 root 不迁移旧资料。历史仍在原 materials/.history。单文件保存名优先用 Moodle 标题，区分 Seminar 1 与 Seminar 1 (Solutions)；文件夹子文件保留原名。旧 tracked 文件用 organize 整理，未修改的旧可读副本可换名，批注副本保留。规则工具当次生效并持久保存，程序升级仍需重连 MCP；独立 skill 的升级需要用户授权，不随程序更新覆盖。

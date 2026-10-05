@@ -1,3 +1,4 @@
+import { routingSchema, validateRouting, type Routing } from './routing.js';
 import { constants } from 'node:fs';
 import { open, rename, unlink } from 'node:fs/promises';
 import { dirname, basename, resolve, isAbsolute } from 'node:path';
@@ -36,5 +37,23 @@ export async function confirmSetup(service: MoodleService, dataDir: string): Pro
     await writePrivateJson(service.cfg.settingsFile, { schemaVersion: 1, confirmed: true, dataDir: resolve(service.cfg.dataDir), coursesFile: resolve(service.cfg.coursesFile) });
     service.cfg.setupConfirmed = true;
     return service.status();
+  });
+}
+
+export async function configureOrganization(service: MoodleService, value: Routing): Promise<unknown> {
+  const routing = routingSchema.parse(value);
+  return service.withBackend(async backend => {
+    await validateRouting(service.cfg, routing);
+    if (routing.mode === 'existing') {
+      for (const courseId of new Set(routing.rules.filter(r => r.moduleIds?.length).map(r => r.courseId))) {
+        const resources = await backend.listResources(courseId);
+        for (const rule of routing.rules.filter(r => r.courseId === courseId)) {
+          if (rule.moduleIds?.some(id => !resources.some(r => r.moduleId === id && ['file', 'folder'].includes(r.type)))) throw new MoodleError('INVALID_INPUT');
+        }
+      }
+    }
+    await writePrivateJson(resolve(service.cfg.dataDir, '_moodle', 'routing.json'), routing);
+    service.cfg.routing = routing;
+    return { organization: routing, restartMcpRequired: false, existingFilesRetained: true, automaticMigration: false };
   });
 }

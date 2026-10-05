@@ -1,3 +1,4 @@
+import { loadRouting, type Routing } from './routing.js';
 import { readFileSync, lstatSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { isAbsolute, join, resolve } from 'node:path';
@@ -6,6 +7,7 @@ import { migrateStorage, saveMigratedSettings } from './storage.js';
 import { MoodleError, type SelectedCourse } from './model.js';
 
 export interface Config {
+  routing?: Routing;
   settingsFile: string; setupConfirmed: boolean;
   courses: SelectedCourse[]; coursesFile: string; profileDir: string; dataDir: string; materialsDir: string; stateDir: string;
   headless: boolean; requestIntervalMs: number; timeoutMs: number; maxBytes: number;
@@ -31,7 +33,7 @@ export function config(): Config {
   } : undefined);
   if (moveCourses) coursesFile = join(resolve(dataDir), '_moodle', 'courses.json');
   settings = loadSettings(settingsFile);
-  return { settingsFile, setupConfirmed: settings?.dataDir === resolve(dataDir) && settings?.coursesFile === resolve(coursesFile), courses: loadCourses(coursesFile), coursesFile, dataDir, profileDir, materialsDir: join(dataDir, 'materials'), stateDir: join(dataDir, '_moodle', 'state'),
+  return { routing: loadRouting(dataDir), settingsFile, setupConfirmed: settings?.dataDir === resolve(dataDir) && settings?.coursesFile === resolve(coursesFile), courses: loadCourses(coursesFile), coursesFile, dataDir, profileDir, materialsDir: join(dataDir, 'materials'), stateDir: join(dataDir, '_moodle', 'state'),
     headless: process.env.MOODLE_HEADLESS !== 'false', requestIntervalMs: 1500, timeoutMs: 30000, maxBytes: 100 * 1024 * 1024 };
 }
 export function requireSetup(cfg: Config): void {

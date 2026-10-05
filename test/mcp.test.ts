@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Client } from '@modelcontextprotocol/client';
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -14,7 +14,7 @@ test('official MCP client discovers tools and invokes actual server with validat
   const client = new Client({ name: 'moodle-test-client', version: '0.1.0' });
   try {
     await client.connect(transport); const list = await client.listTools();
-    assert.deepEqual(list.tools.map(t => t.name).sort(), ['confirm_setup', 'select_courses', 'check_connection', 'download_resource', 'get_sync_settings', 'list_courses', 'list_resources', 'sync_courses'].sort());
+    assert.deepEqual(list.tools.map(t => t.name).sort(), ['configure_organization', 'confirm_setup', 'select_courses', 'check_connection', 'download_resource', 'get_sync_settings', 'list_courses', 'list_resources', 'sync_courses'].sort());
     const result = await client.callTool({ name: 'get_sync_settings', arguments: {} });
     assert.equal(result.isError, undefined); assert.match(JSON.stringify(result), /Other student course/);
     const organize = await client.callTool({ name: 'sync_courses', arguments: { mode: 'organize' } });
@@ -27,6 +27,14 @@ test('official MCP client discovers tools and invokes actual server with validat
     assert.equal(wrongDirectory.isError, true);
     const confirmed = await client.callTool({ name: 'confirm_setup', arguments: { dataDir: root, confirmed: true } });
     assert.equal(confirmed.isError, undefined);
+    const existing = join(root, 'existing'); await mkdir(join(existing, 'Seminar'), { recursive: true });
+    const configured = await client.callTool({ name: 'configure_organization', arguments: { organization: { mode: 'existing', root: existing, rules: [{ courseId: 808, directory: 'Seminar', keywords: ['seminar'] }] }, confirmed: true } });
+    assert.equal(configured.isError, undefined, JSON.stringify(configured)); assert.match(JSON.stringify(configured), /restartMcpRequired/);
+    const noConfirmation = await client.callTool({ name: 'configure_organization', arguments: { organization: { mode: 'managed' }, confirmed: false } });
+    assert.equal(noConfirmation.isError, true);
+    const unsafeRule = await client.callTool({ name: 'configure_organization', arguments: { organization: { mode: 'existing', root: existing, rules: [{ courseId: 808, directory: '../escape', keywords: ['seminar'] }] }, confirmed: true } });
+    assert.equal(unsafeRule.isError, true);
+    assert.match(JSON.stringify(await client.callTool({ name: 'get_sync_settings', arguments: {} })), /Seminar/);
     const cleared = await client.callTool({ name: 'select_courses', arguments: { courseIds: [] } });
     assert.equal(cleared.isError, undefined);
     const settings = await client.callTool({ name: 'get_sync_settings', arguments: {} });
@@ -50,7 +58,7 @@ test('stdio startup migrates legacy storage and reports preserved confirmation w
   const client = new Client({ name: 'migration-test-client', version: '0.1.0' });
   try {
     await client.connect(new StdioClientTransport({ command: process.execPath, env, args: [fileURLToPath(new URL('../src/server.js', import.meta.url))] }));
-    assert.equal((await client.listTools()).tools.length, 8);
+    assert.equal((await client.listTools()).tools.length, 9);
     const response = await client.callTool({ name: 'get_sync_settings', arguments: {} });
     assert.equal(response.isError, undefined);
     const settings = JSON.parse((response.content as Array<{text:string}>)[0]!.text);

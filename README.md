@@ -23,7 +23,7 @@ Download materials from selected courses, organize them by course and Moodle sec
 
 1. Download the ZIP attachment with the highest version number from [Releases](https://github.com/MarkyMarkMa/unnc-moodle-mcp/releases), then extract it to a permanent program directory.
 2. On macOS open `scripts/setup.command`; on Windows open `scripts/setup.cmd` (experimental). The launcher checks prerequisites, installs dependencies with your confirmation, builds the server, and starts setup.
-3. Sign in to Moodle in the dedicated browser, complete MFA, select your courses, and confirm the materials directory. The final step recommends installing the Codex skill; press Enter to accept or enter n to skip.
+3. Sign in to Moodle in the dedicated browser, complete MFA, select your courses, and confirm the materials directory. Choose automatic course/section folders or your existing folder structure; existing-folder mappings are then confirmed in Codex. The final step recommends installing the Codex skill; press Enter to accept or enter n to skip.
 4. Follow [Connect to Codex](#connect-to-codex), then restart Codex.
 
 Alternatively, run these commands in the extracted program directory:
@@ -82,7 +82,7 @@ Restart Codex, then check `get_sync_settings` and `check_connection`. Downloads 
 | Organize existing downloads | “Organize my existing Moodle materials without downloading them again.” |
 | Add a course | “Show my Moodle courses so I can select another course to synchronize.” |
 
-The data root normally contains `materials` and `_moodle`. Course configuration, sync state and recognized legacy upgrade backups live in `_moodle`, which stays visible for recovery on both macOS and Windows. Files appear under `materials/Course name/Moodle section/Filename`. Historical versions are stored in `materials/.history`. No teaching categories are inferred or translated. Annotated files and personal notes are retained.
+The data root normally contains `materials` and `_moodle`. Course configuration, sync state and recognized legacy upgrade backups live in `_moodle`, which stays visible for recovery on both macOS and Windows. In automatic mode files appear under `materials/Course name/Moodle section/Resource title.ext`. Single-file resources use the Moodle title to distinguish, for example, Seminar 1 and Seminar 1 (Solutions); folder children retain their filenames. Historical versions are stored in `materials/.history`. Existing-folder mode uses user-confirmed category rules, rather than inferring categories from file order or type. Annotated files and personal notes are retained.
 
 Quick synchronization discovers new files but does not check remote changes to previously recorded files. Full synchronization checks updates. Organize mode refreshes the local folder layout without downloading materials. Additional courses require your approval.
 
@@ -118,3 +118,11 @@ Automatic updating remains macOS-only. On Windows stop MCP and dedicated Edge, k
 The shared core and manifest schema remain unchanged. Real Windows installation, school login/MFA, file locking, long paths, ACL, and synchronization still require validation. Deep paths can encounter Windows path limits. macOS test results do not establish Windows support.
 
 Windows uses a new dedicated `edge-profile` directory. Existing Windows Chrome profiles are preserved and are not imported; sign in again with Edge. Course settings and materials remain unchanged. If you explicitly set `MOODLE_PROFILE_DIR`, point it at a new dedicated Edge directory rather than the old Chrome profile. macOS retains its Chrome profile.
+
+## Use your existing folders
+
+Tell Codex: “Use my existing course folders, put lectures in Lecture and seminars in Seminar, show me the mapping before saving.” Codex reads approved Moodle resources and their available descriptions, inspects the folders you authorize, and saves confirmed literal keyword rules or individual resource assignments through `configure_organization`. Rules persist under `_moodle/routing.json` and take effect without restarting MCP. Setup offers both folder modes; choosing existing folders initially leaves rules empty so nothing unclassified is downloaded.
+
+A shared existing root can contain multiple course folders. Targets must already exist beneath it. Unmatched or ambiguous resources are skipped and reported for confirmation. Explicit resource assignments override keywords; once classified, a downloaded resource retains its folder even if renamed. To correct a classification, confirm an explicit resource assignment. Keywords are case-insensitive substrings of title, available description, Moodle section and filename; no PDF content analysis or automatic semantic classification is performed.
+
+Existing files are not adopted as synchronized copies; same-name collisions receive a suffix. Notes and annotations are preserved. Moving a mapped folder causes a reported failure until its rule is updated. Historical downloads remain in the original `materials/.history`; choosing a different output root does not migrate old files. Stop old MCP/CLI processes before upgrading, reconnect the new server, and read settings back. Use organize mode to rename tracked, unedited legacy files from their old generic names without downloading content; modified copies are retained separately.

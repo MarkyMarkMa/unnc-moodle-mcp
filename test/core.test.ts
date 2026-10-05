@@ -1,3 +1,5 @@
+import { loadRouting, routeFile } from '../src/routing.js';
+import { configureOrganization } from '../src/setup.js';
 import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, writeFile, mkdir, symlink, rm, rename } from 'node:fs/promises';
@@ -260,7 +262,7 @@ test('legacy numbered files migrate without downloading and preserve user notes'
   const migrated = await engine.run({ mode: 'quick' });
   assert.equal(migrated.failed.length, 0); assert.equal(backend.downloads, downloads);
   const next = JSON.parse(await readFile(manifestPath, 'utf8')).files['101:201:main'];
-  assert.equal(next.readablePath, 'Example course/Lecture Notes/same.pdf');
+  assert.equal(next.readablePath, 'Example course/Lecture Notes/ODE1.pdf');
   assert.equal(next.versions[0].relativePath, '.history/' + legacyPath);
   assert.equal(await readFile(join(cfg.materialsDir, next.readablePath), 'utf8'), 'first PDF');
   assert.equal(await readFile(join(cfg.materialsDir, 'My notes.md'), 'utf8'), 'personal notes');
@@ -275,7 +277,7 @@ test('quick sync moves owned files after course and section renames without fetc
   backend.resources = [{ ...resource, sectionName: 'Autumn Lectures' }];
   const quick = await engine.run({ mode: 'quick' });
   assert.equal(quick.failed.length, 0); assert.equal(backend.requests, requests);
-  assert.equal(await readFile(join(cfg.materialsDir, 'Differential Equations/Autumn Lectures/same.pdf'), 'utf8'), 'first PDF');
+  assert.equal(await readFile(join(cfg.materialsDir, 'Differential Equations/Autumn Lectures/ODE1.pdf'), 'utf8'), 'first PDF');
   await assert.rejects(readFile(first.added[0]!.path), { code: 'ENOENT' });
   assert.deepEqual((await readdir(cfg.materialsDir)).sort(), ['.history', 'Differential Equations']);
 });
@@ -349,7 +351,7 @@ test('organize mode moves existing files but never downloads new files or marks 
   backend.resources = [{ ...resource, sectionName: 'Renamed section' }];
   const renamed = await engine.run({ mode: 'organize' });
   assert.equal(renamed.failed.length, 0); assert.equal(backend.requests, requests);
-  assert.equal(await readFile(join(cfg.materialsDir, 'Example course/Renamed section/same.pdf'), 'utf8'), 'first PDF');
+  assert.equal(await readFile(join(cfg.materialsDir, 'Example course/Renamed section/ODE1.pdf'), 'utf8'), 'first PDF');
 });
 
 test('Moodle folder resources retain title and nested directories', async t => {
@@ -386,7 +388,7 @@ test('publishing commit failure rolls back latest copy and cleans temporary file
   const reject = async () => { throw new MoodleError('LOCAL_IO', undefined, 'commit'); };
   await assert.rejects(publishLatest(cfg, resourceFile(resource), state, reject), (e: unknown) => e instanceof MoodleError && e.stage === 'commit');
   assert.equal(await readFile(first.added[0]!.path, 'utf8'), 'first PDF');
-  assert.deepEqual(await readdir(dirname(first.added[0]!.path)), ['same.pdf']);
+  assert.deepEqual(await readdir(dirname(first.added[0]!.path)), ['ODE1.pdf']);
   await assert.rejects(publishLatest(cfg, resourceFile({ ...resource, sectionName: 'Renamed' }), state, reject));
   assert.deepEqual(await readdir(join(cfg.materialsDir, 'Example course/Renamed')), []);
   assert.equal(await readFile(first.added[0]!.path, 'utf8'), 'first PDF');
@@ -412,4 +414,86 @@ test('remote updates preserve annotations and keep one stable collision path for
   assert.equal(versions.length, 3);
   assert.equal(await readFile(join(cfg.materialsDir, versions[0].relativePath), 'utf8'), 'first PDF');
   assert.equal(await readFile(first.added[0]!.path, 'utf8'), 'my annotations');
+});
+
+
+test('single-file visible names distinguish questions and solutions despite identical downloaded filenames', async t => {
+  const { cfg, backend, engine } = await fixture(t);
+  backend.resources = [{ ...resource, title: 'Seminar 01 Questions', sectionName: 'Seminars' }, { ...resource, moduleId: 202, title: 'Seminar 01 Solutions', sectionName: 'Seminars' }];
+  backend.content.set(202, 'solutions');
+  const first = await engine.run();
+  assert.equal(first.failed.length, 0);
+  assert.deepEqual(first.added.map(e => basename(e.path)), ['Seminar 01 Questions.pdf', 'Seminar 01 Solutions.pdf']);
+  const state = JSON.parse(await readFile(join(cfg.stateDir, 'manifest.json'), 'utf8'));
+  assert.equal(state.files['101:201:main'].versions[0].filename, 'same.pdf');
+  // Simulate a pre-upgrade readable filename; organize uses Moodle title without redownloading.
+  const oldPath = join(cfg.materialsDir, 'Example course/Seminars/same.pdf');
+  await rename(first.added[0]!.path, oldPath);
+  state.files['101:201:main'].readablePath = 'Example course/Seminars/same.pdf';
+  state.files['101:201:main'].readableFilename = 'same.pdf';
+  await writeFile(join(cfg.stateDir, 'manifest.json'), JSON.stringify(state));
+  const count = backend.requests;
+  await engine.run({ mode: 'organize' });
+  assert.equal(backend.requests, count);
+  assert.equal(await readFile(first.added[0]!.path, 'utf8'), 'first PDF');
+});
+
+test('existing-folder rules persist, classify mixed sections by description, keep notes and retain assignments on rename', async t => {
+  const { root, cfg, backend, engine } = await fixture(t);
+  const existing = join(root, 'existing');
+  await mkdir(join(existing, 'My course/Lecture'), { recursive: true });
+  await mkdir(join(existing, 'My course/Seminar'), { recursive: true });
+  await writeFile(join(existing, 'My course/Lecture/Linear Programming.pdf'), 'personal annotation');
+  backend.resources = [
+    { ...resource, title: 'Linear Programming', sectionName: 'Linear Programming', description: 'Week 1 Lecture 1 Part 2' },
+    { ...resource, moduleId: 202, title: 'LP Quiz', sectionName: 'Linear Programming' },
+    { ...resource, moduleId: 203, title: 'Unclear spreadsheet', sectionName: 'Linear Programming' },
+  ];
+  backend.content.set(202, 'seminar'); backend.content.set(203, 'unclear');
+  const service = new MoodleService(cfg, () => backend);
+  await configureOrganization(service, { mode: 'existing', root: existing, rules: [
+    { courseId: 101, directory: 'My course/Lecture', keywords: ['lecture'] },
+    { courseId: 101, directory: 'My course/Seminar', moduleIds: [202] },
+  ] });
+  assert.deepEqual(loadRouting(root), cfg.routing);
+  const first = await engine.run();
+  assert.equal(first.failed.length, 0); assert.equal(first.added.length, 2);
+  assert.match(first.added[0]!.path, /Lecture[/\\]Linear Programming \(2\).pdf$/);
+  assert.match(first.added[1]!.path, /Seminar[/\\]LP Quiz.pdf$/);
+  assert.equal(first.skipped.length, 1); assert.match(first.skipped[0]!.reason, /没有匹配/);
+  assert.equal(backend.requests, 2);
+  assert.equal(await readFile(join(existing, 'My course/Lecture/Linear Programming.pdf'), 'utf8'), 'personal annotation');
+  assert.deepEqual(await readdir(join(cfg.materialsDir)), ['.history']);
+  await writeFile(first.added[0]!.path, 'my synced annotations');
+  cfg.routing = loadRouting(root);
+  backend.resources[0] = { ...backend.resources[0]!, title: 'Renamed notes', description: undefined };
+  backend.content.set(201, 'updated');
+  const second = await new SyncEngine(cfg, backend).run();
+  assert.equal(second.failed.length, 0); assert.match(second.updated[0]!.path, /Lecture[/\\]Renamed notes.pdf$/);
+  assert.equal(await readFile(first.added[1]!.path, 'utf8'), 'seminar');
+  assert.equal(await readFile(first.added[0]!.path, 'utf8'), 'my synced annotations');
+  assert.equal(await readFile(join(existing, 'My course/Lecture/Linear Programming.pdf'), 'utf8'), 'personal annotation');
+});
+
+test('conflicting rules skip downloads; explicit assignments override keywords; unsafe or missing targets stop safely', async t => {
+  const { root, cfg, backend, engine } = await fixture(t);
+  const existing = join(root, 'existing'); await mkdir(join(existing, 'Lecture'), { recursive: true }); await mkdir(join(existing, 'Seminar'));
+  cfg.routing = { mode: 'existing', root: existing, rules: [
+    { courseId: 101, directory: 'Lecture', keywords: ['ODE'] },
+    { courseId: 101, directory: 'Seminar', keywords: ['ODE'] },
+  ] };
+  const conflict = await engine.run(); assert.equal(conflict.skipped.length, 1); assert.match(conflict.skipped[0]!.reason, /冲突/); assert.equal(backend.requests, 0);
+  cfg.routing.rules[1]!.moduleIds = [201];
+  assert.equal(routeFile(cfg, resourceFile(resource)).directory, 'Seminar');
+  const first = await engine.run(); assert.equal(first.added.length, 1);
+  await rename(join(existing, 'Seminar'), join(existing, 'Moved Seminar'));
+  const missing = await engine.run(); assert.equal(missing.failed.length, 1); assert.equal(backend.requests, 1);
+  assert.equal(await readFile(join(existing, 'Moved Seminar/ODE1.pdf'), 'utf8'), 'first PDF');
+  const service = new MoodleService(cfg, () => backend);
+  await assert.rejects(configureOrganization(service, { mode: 'existing', root: existing, rules: [{ courseId: 101, directory: '../escape', keywords: ['x'] }] }));
+  await assert.rejects(configureOrganization(service, { mode: 'existing', root: existing, rules: [{ courseId: 101, directory: 'Lecture', moduleIds: [999] }] }));
+  await assert.rejects(configureOrganization(service, { mode: 'existing', root: existing, rules: [{ courseId: 999, directory: 'Lecture', keywords: ['x'] }] }));
+  await symlink(join(existing, 'Lecture'), join(existing, 'Linked'), 'dir');
+  await assert.rejects(configureOrganization(service, { mode: 'existing', root: existing, rules: [{ courseId: 101, directory: 'Linked', keywords: ['x'] }] }));
+  assert.equal((await service.check()).authenticated, true); // Failed writes release the shared lock.
 });

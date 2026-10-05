@@ -106,7 +106,7 @@ export class BrowserBackend implements Backend {
       const sectionName = (heading?.textContent || labelled || '').trim().replace(/\s+/g, ' ');
       return {
       href: e.getAttribute('href') ?? '', text: (e.textContent ?? '').trim().replace(/\s+/g, ' '),
-      context: (e.closest('.activity')?.textContent ?? '').trim().replace(/\s+/g, ' ').slice(0, 300),
+      context: (e.closest('.activity, [data-for="cmitem"]')?.textContent ?? '').trim().replace(/\s+/g, ' ').slice(0, 2000),
       ...(sectionName ? { sectionName } : {}),
     }; }));
   }

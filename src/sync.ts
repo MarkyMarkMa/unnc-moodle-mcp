@@ -1,3 +1,5 @@
+import { routeFile, checkRouteDirectory } from './routing.js';
+import { isAbsolute } from 'node:path';
 import { constants } from 'node:fs';
 import { link, open, readFile, rename, unlink, lstat } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
@@ -10,7 +12,7 @@ import { fileHash, fileSlot, inside, privateDirectory, regularFile, removeStagin
 import { publishLatest, pruneEmpty } from './layout.js';
 
 const versionSchema = z.object({ version: z.number().int().positive(), relativePath: z.string(), filename: z.string(), sha256: z.string().regex(/^[a-f0-9]{64}$/), bytes: z.number().int().nonnegative(), savedAt: z.string() });
-const storedSchema = z.object({ readablePath: z.string().optional(), readableHash: z.string().regex(/^[a-f0-9]{64}$/).optional(), readableFilename: z.string().optional(), key: z.string(), courseId: z.number().int(), moduleId: z.number().int().positive(), remotePath: z.string(), title: z.string(), etag: z.string().optional(), lastModified: z.string().optional(), mime: z.string().optional(), present: z.boolean(), lastCheckedAt: z.string(), versions: z.array(versionSchema).min(1) });
+const storedSchema = z.object({ routingDirectory: z.string().optional(), readableRoot: z.string().optional(), readablePath: z.string().optional(), readableHash: z.string().regex(/^[a-f0-9]{64}$/).optional(), readableFilename: z.string().optional(), key: z.string(), courseId: z.number().int(), moduleId: z.number().int().positive(), remotePath: z.string(), title: z.string(), etag: z.string().optional(), lastModified: z.string().optional(), mime: z.string().optional(), present: z.boolean(), lastCheckedAt: z.string(), versions: z.array(versionSchema).min(1) });
 const manifestSchema = z.object({ schemaVersion: z.literal(1), files: z.record(z.string(), storedSchema) });
 
 export class SyncEngine {
@@ -23,7 +25,8 @@ export class SyncEngine {
       for (const [key, f] of Object.entries(state.files)) {
         if (key !== f.key || !Number.isSafeInteger(f.courseId) || f.courseId <= 0) throw new Error();
         for (const v of f.versions) inside(this.cfg.materialsDir, v.relativePath);
-        if (f.readablePath) { inside(this.cfg.materialsDir, f.readablePath); if (f.readablePath.replaceAll('\\', '/').startsWith('.history/')) throw new MoodleError('STATE_INVALID'); }
+        if (f.readableRoot && !isAbsolute(f.readableRoot)) throw new MoodleError('STATE_INVALID');
+        if (f.readablePath) { inside(f.readableRoot ?? this.cfg.materialsDir, f.readablePath); if (f.readablePath.replaceAll('\\', '/').startsWith('.history/')) throw new MoodleError('STATE_INVALID'); }
       }
       return state;
     } catch (e) {
@@ -163,8 +166,14 @@ export class SyncEngine {
           for (const file of files) {
             seen.add(file.key);
             try {
+              const route = routeFile(this.cfg, file, state.files[file.key]);
+              if (route.reason) {
+                summary.skipped.push({ courseId, moduleId: resource.moduleId, title: resource.title, reason: route.reason });
+                complete = false; continue;
+              }
+              if (route.directory) await checkRouteDirectory(route.root, route.directory);
               const previous = state.files[file.key];
-              const previousReadable = previous?.readablePath ? await regularFile(this.cfg.materialsDir, previous.readablePath) : undefined;
+              const previousReadable = previous?.readablePath && (previous.readableRoot ?? this.cfg.materialsDir) === route.root ? await regularFile(route.root, previous.readablePath) : undefined;
               if (previousReadable && previous?.readableHash && await fileHash(previousReadable) !== previous.readableHash) {
                 summary.skipped.push({ courseId, moduleId: resource.moduleId, title: resource.title, reason: '保留用户修改的课件；远端版本使用独立可读文件' });
               }

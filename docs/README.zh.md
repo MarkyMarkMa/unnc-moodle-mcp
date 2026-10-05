@@ -114,3 +114,13 @@ macOS 和 Windows 设置向导均提供推荐的 skill 安装选项；老用户�
 Windows 安装、配置目录、权限与手动升级说明见[项目说明](../README.md#windows-experimental)。尚未完成真实 Windows 验证，不能承诺完整支持；自动升级仍仅适用于 macOS。
 
 Windows 默认使用 Microsoft Edge，专用目录为 `%LOCALAPPDATA%/moodle-mcp/edge-profile`。旧 Windows Chrome profile 保留但不导入，需本人重新登录；课程和资料不变。显式设置 MOODLE_PROFILE_DIR 时请使用新的 Edge 专用目录。macOS 保持 Chrome。
+
+## 沿用已有文件夹
+
+设置向导现在提供两种保存方式：按课程/Moodle 栏目自动建目录，或合并到已有分类目录。可以对 Codex 说：“使用我已有的课程文件夹，把 lecture 放进 Lecture，seminar 放进 Seminar，先展示对应关系。”已有目录模式最初没有分类规则，未分类资料不会下载；在 Codex 中确认规则后才开始。
+
+Codex 查看已批准课程的实际标题和可用页面描述，以及你授权查看的本地目录，再通过 configure_organization 保存关键词规则或具体资源归属。规则保存在 _moodle/routing.json，后续同步和重启继续沿用，工具修改当次生效。目标是共同根目录下已存在的文件夹；多门课可分别映射。无法匹配或分类冲突时跳过并报告，具体资源归属优先于关键词。首次分类成功后，文件改名仍留在原分类；纠正分类时确认具体资源归属。
+
+关键词按标题、可用描述、栏目和文件名做不区分大小写的字面包含匹配，不凭页面顺序或文件类型猜测，不读取 PDF 内容自动分类。已有文件不自动接管，同名避让，保留笔记和批注；映射目录移动后报告失败，需更新规则。历史版本仍在原 materials/.history，切换输出根目录不迁移旧资料。
+
+单文件课件优先使用 Moodle 资源标题，例如 Seminar 1.pdf 和 Seminar 1 (Solutions).pdf；文件夹资源内部保留原文件名。旧版已跟踪且未修改的课件可以用“仅整理本地课件”重新命名，不下载内容；批注版独立保留。升级前停止旧 MCP/CLI，升级后重连并回读设置。

@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 // New release files need explicit review; never copy a whole fixture directory.
 export const PUBLIC_FILES = [
   'src/browser.ts', 'src/cli.ts', 'src/config.ts', 'src/model.ts', 'src/parser.ts',
-  'src/layout.ts', 'src/safety.ts', 'src/server.ts', 'src/service.ts', 'src/sync.ts',
+  'src/routing.ts', 'src/layout.ts', 'src/safety.ts', 'src/server.ts', 'src/service.ts', 'src/sync.ts',
   'src/storage.ts', 'test/storage.test.ts', 'src/setup.ts', 'src/onboarding.ts', 'src/platform.ts',
   'test/platform.test.ts', 'test/config.test.ts', 'test/core.test.ts', 'test/download.test.ts',
   'test/update.test.ts', 'test/mcp.test.ts', 'test/pagination.test.ts', 'test/release.test.ts', 'test/setup.test.ts',

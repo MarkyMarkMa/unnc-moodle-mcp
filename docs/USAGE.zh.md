@@ -140,3 +140,13 @@ MIT 许可只覆盖本项目代码，不授予学校课件、品牌或第三方�
 Windows + Edge 为实验性适配，安装与路径见[项目说明](../README.md#windows-experimental)。自动升级仍仅适用于 macOS；Windows 使用新程序目录手动升级并保留配置及资料。
 
 Windows 从 Chrome 版升级后使用 edge-profile，不导入旧浏览器 profile，需本人重新登录。MOODLE_PROFILE_DIR 覆盖应指向新的 Edge 专用目录。课程名单和资料保留。
+
+## 文件夹组织（0.4.8）
+
+configure_organization 必须传 confirmed: true。自动模式 organization: { mode: "managed" }。已有目录模式 organization: { mode: "existing", root: "/absolute/existing/root", rules: [{ courseId: 101, directory: "My course/Lecture", keywords: ["lecture"] }, { courseId: 101, directory: "My course/Seminar", moduleIds: [201] }] }。上述 ID 为合成示例，使用时必须换成已观察且获批的 ID；Windows 使用本机绝对路径。工具替换完整规则，请保留其他仍需要的规则。
+
+规则和分类归属重启后继续保留。目标文件夹必须已存在且在所选根目录下，不能包含符号链接。未匹配或冲突的资源会出现在 skipped，不下载；目标目录丢失时报 failed，不重建。具体 moduleIds 归属优先于关键词；首次分类成功后改名仍留在原分类，纠正分类需确认明确归属。已有用户文件不自动接管或覆盖，旧根目录及历史不迁移；历史仍在原 materials/.history。切换模式可能发布新的可读副本，之前根目录里的副本保留。
+
+单文件的可读文件名使用 Moodle 标题及下载文件的扩展名；文件夹资源保留子文件名和内部结构。标题没有说明题目/解析时不猜测，仍需用户确认。关键词匹配标题、可用活动描述、栏目和文件名中不区分大小写的字面片段，不是 PDF 内容分类。配置前及保存后读取 get_sync_settings.organization，不把分类 skipped 说成同步完整成功。
+
+升级前停止旧进程，升级后重连 MCP。请求 organize 仅整理已有且未修改的 tracked 副本，无需重新下载；批注副本独立保留。设置后可以在 Codex 中配置规则，向导本身不下载或推断分类。

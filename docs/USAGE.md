@@ -121,3 +121,13 @@ Maintainer verification has included real course discovery, downloads, and reorg
 Windows adaptations are experimental; see the [Windows guide](../README.md#windows-experimental). Automatic updating is macOS-only; on Windows use a separate new program directory and preserve settings/materials.
 
 Windows defaults to Microsoft Edge with a new dedicated edge-profile. Old Chrome profiles are preserved, not imported; sign in again. An explicit MOODLE_PROFILE_DIR must point to a new dedicated Edge profile. macOS continues to use Chrome.
+
+## Folder organization (0.4.8)
+
+`configure_organization` requires `confirmed: true`. Automatic mode: `organization: { mode: "managed" }`. Existing mode: `organization: { mode: "existing", root: "/absolute/existing/root", rules: [{ courseId: 101, directory: "My course/Lecture", keywords: ["lecture"] }, { courseId: 101, directory: "My course/Seminar", moduleIds: [201] }] }`. These IDs are synthetic examples: use only observed, approved IDs. The tool replaces the entire rule set, so retain all rules you still want. Use an absolute native Windows path on Windows.
+
+Rules and file destinations persist across restarts. Existing directories must exist, stay under the chosen root, and contain no symlinks. Unmatched or conflicting resources are reported in skipped without downloading; missing targets fail without recreating them. Explicit module assignments override keywords. A successfully classified file retains its directory after a resource rename. Correct it with an explicit assignment. Existing personal files are never adopted or overwritten; old roots and history are not migrated. History remains in the original materials/.history. Switching modes may publish a new readable copy; a copy in a previous root is retained.
+
+Single-file readable names use the Moodle title and the downloaded extension; folder children retain filenames and nested paths. If titles do not distinguish questions and solutions, do not infer that distinction.Keywords match literal, case-insensitive substrings of title, available activity description, section and filename; this is not PDF content classification. Read `get_sync_settings.organization` before configuring and after saving; do not equate skipped classification with a complete sync.
+
+Upgrade: stop older processes, install the new version and reconnect MCP. Request organize mode to rename existing tracked, unedited copies without redownloading; annotated copies remain separate. Rules can be configured in Codex after setup; setup alone does not synchronize or infer mappings.

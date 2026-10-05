@@ -27,16 +27,16 @@ export function parseResources(courseId: number, anchors: Anchor[]): Resource[] 
     const title = a.text.trim().replace(/\s+(File|Folder|URL|Page|Book|Forum|Assignment|Quiz)$/i, '');
     const format = /\b(PDF|PPTX?|DOCX?|XLSX?|ZIP)\b/i.exec(a.context ?? '')?.[1]?.toUpperCase();
     const sectionName = a.sectionName?.trim().replace(/\s+/g, ' ');
-    const item: Resource = { courseId, moduleId, title, type, url: `${MOODLE_ORIGIN}${u.pathname}?id=${moduleId}`, ...(format ? { format } : {}), ...(sectionName ? { sectionName } : {}) };
+    const item: Resource = { courseId, moduleId, title, type, url: `${MOODLE_ORIGIN}${u.pathname}?id=${moduleId}`, ...(a.context ? { description: a.context } : {}), ...(format ? { format } : {}), ...(sectionName ? { sectionName } : {}) };
     const old = result.get(moduleId);
     if (!old) result.set(moduleId, item);
-    else result.set(moduleId, { ...old, ...(!old.format && format ? { format } : {}), ...(!old.sectionName && sectionName ? { sectionName } : {}) });
+    else result.set(moduleId, { ...old, ...(!old.description && a.context ? { description: a.context } : {}), ...(!old.format && format ? { format } : {}), ...(!old.sectionName && sectionName ? { sectionName } : {}) });
   }
   return [...result.values()];
 }
 export function resourceFile(resource: Resource): RemoteFile {
   if (resource.type !== 'file') throw new MoodleError('UNSUPPORTED');
-  return { courseId: resource.courseId, moduleId: resource.moduleId, key: `${resource.courseId}:${resource.moduleId}:main`, title: resource.title, url: resource.url, remotePath: 'main', ...(resource.sectionName ? { sectionName: resource.sectionName } : {}) };
+  return { courseId: resource.courseId, moduleId: resource.moduleId, key: `${resource.courseId}:${resource.moduleId}:main`, title: resource.title, description: resource.description, url: resource.url, remotePath: 'main', ...(resource.sectionName ? { sectionName: resource.sectionName } : {}) };
 }
 export function parseFolder(resource: Resource, anchors: Anchor[]): RemoteFile[] {
   const files = new Map<string, RemoteFile>();
@@ -50,7 +50,7 @@ export function parseFolder(resource: Resource, anchors: Anchor[]): RemoteFile[]
     if (remotePath.includes('\0') || remotePath.split(/[\\/]/).includes('..')) throw new MoodleError('PATH_UNSAFE');
     const key = `${resource.courseId}:${resource.moduleId}:${remotePath}`;
     const parts = remotePath.split('/');
-    files.set(key, { courseId: resource.courseId, moduleId: resource.moduleId, key, title: resource.title, url: u.href, remotePath, filename: parts.at(-1), relativeFolder: parts.slice(0, -1).join('/'), ...(resource.sectionName ? { sectionName: resource.sectionName } : {}) });
+    files.set(key, { courseId: resource.courseId, moduleId: resource.moduleId, key, title: resource.title, description: resource.description, url: u.href, remotePath, filename: parts.at(-1), relativeFolder: parts.slice(0, -1).join('/'), ...(resource.sectionName ? { sectionName: resource.sectionName } : {}) });
   }
   return [...files.values()];
 }

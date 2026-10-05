@@ -44,3 +44,5 @@ Windows 实验性预发布仍使用与 package.json 一致的数字版本号，�
 0.4.6：设置末尾提供推荐的 skill 安装选项；发布说明包含老用户 npm run install-skill 补装及程序更新不替换独立 skill 的限制。安装器与其测试进入公开白名单。
 
 0.4.7：Windows 改为 Edge，登录、同步、doctor 与 DOM 测试一致；旧 Chrome profile 不导入不删除，需重新登录。显式 profile 覆盖使用新 Edge 目录。仍为未实测的 Windows 实验性预发布。
+
+0.4.8：两种目录模式、持久分类规则以及单文件 Moodle 标题命名统一交付。升级前停止旧进程，重连新版并回读 organization；用 organize 整理已有未修改可读副本，保留批注和历史。公开包包含 routing 源码及相关反例，不包含用户目录映射、真实课件、课程记录和本地整理报告。Windows Edge 继续保持实验性，不将本次 macOS 验证算作 Windows 实测。

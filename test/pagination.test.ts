@@ -11,7 +11,7 @@ test('resource discovery reads enclosing Moodle section titles without mixing se
   const context = await browser.newContext(); const page = await context.newPage();
   await context.route('https://moodle.nottingham.ac.uk/**', route => route.fulfill({ contentType: 'text/html', body: `
     <main id="region-main"><div class="course-content">
-      <section class="section"><h2 data-for="section_title">Select section Collapse Expand<h3 class="sectionname">Lecture Notes</h3></h2><ul class="section"><li class="activity"><a href="/mod/resource/view.php?id=201">Notes File</a></li></ul></section>
+      <section class="section"><h2 data-for="section_title">Select section Collapse Expand<h3 class="sectionname">Lecture Notes</h3></h2><ul class="section"><li class="activity"><a href="/mod/resource/view.php?id=201">Notes File</a><div class="description">Week 1 Lecture 1 Part 2</div></li></ul></section>
       <section data-for="section"><h3 data-for="section_title">Problem Sheets</h3><a href="/mod/folder/view.php?id=202">Exercises Folder</a></section>
       <section class="section" aria-labelledby="exam-title"><h3 id="exam-title">Exam Papers</h3><a href="/mod/resource/view.php?id=203">Paper File</a></section>
       <section class="section"><a href="/mod/resource/view.php?id=204">Unlabelled File</a></section>
@@ -22,6 +22,8 @@ test('resource discovery reads enclosing Moodle section titles without mixing se
   const resources = await backend.listResources(101);
   assert.deepEqual(resources.map(r => r.sectionName), ['Lecture Notes', 'Problem Sheets', 'Exam Papers', undefined]);
   assert.equal((await backend.listFiles(resources[0]!))[0]?.sectionName, 'Lecture Notes');
+  assert.match(resources[0]!.description!, /Week 1 Lecture 1 Part 2/);
+  assert.equal((await backend.listFiles(resources[0]!))[0]?.description, resources[0]!.description);
 });
 
 test('browser course listing handles pagination and a delayed hidden-course response', async () => {
