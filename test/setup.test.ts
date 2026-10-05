@@ -14,7 +14,7 @@ test('setup gates downloads, validates observed selection and preserves history 
   const root = await mkdtemp(join(tmpdir(), 'moodle-setup-')); t.after(() => rm(root, { recursive: true, force: true }));
   const cfg: Config = { ...config(), settingsFile: join(root, 'settings.json'), coursesFile: join(root, 'courses.json'), dataDir: root, stateDir: join(root, 'state'), materialsDir: join(root, 'materials'), courses: [], setupConfirmed: false };
   let discovered = 0;
-  const backend = { listCourses: async () => { discovered++; return [{ id: 808, name: 'Observed course', selected: false }]; }, close: async () => {} } as unknown as Backend;
+  const backend = { listCourses: async () => { discovered++; return [{ id: 808, name: 'Observed course', selected: false }, { id: 909, name: 'New course', selected: false }]; }, close: async () => {} } as unknown as Backend;
   const service = new MoodleService(cfg, () => backend);
   assert.throws(() => service.sync(), (e: unknown) => e instanceof MoodleError && e.code === 'SETUP_REQUIRED');
   await assert.rejects(confirmSetup(service, root));
@@ -28,6 +28,12 @@ test('setup gates downloads, validates observed selection and preserves history 
   const saved = JSON.parse(await readFile(cfg.settingsFile, 'utf8'));
   assert.equal(saved.dataDir, root);
   const sentinel = join(cfg.stateDir, 'history-kept.json'); await writeFile(sentinel, '{}');
+  await selectCourses(service, [909], 'add');
+  assert.deepEqual((cfg.courses as Array<{id:number}>).map(c => c.id), [808, 909]);
+  await selectCourses(service, [909], 'add');
+  assert.deepEqual((cfg.courses as Array<{id:number}>).map(c => c.id), [808, 909]);
+  await assert.rejects(selectCourses(service, [999], 'add'));
+  assert.deepEqual((cfg.courses as Array<{id:number}>).map(c => c.id), [808, 909]);
   const beforeClear = discovered; await selectCourses(service, []);
   assert.equal(discovered, beforeClear); assert.deepEqual(loadCourses(cfg.coursesFile), []);
   assert.equal(await readFile(sentinel, 'utf8'), '{}');

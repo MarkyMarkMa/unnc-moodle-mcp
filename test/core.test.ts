@@ -188,3 +188,34 @@ test('commit failure rolls back the in-memory record for a later retry', async t
   await assert.rejects(internals.commitRecord(key, { ...old, present: false }, manifest));
   assert.deepEqual(manifest.files[key], old); assert.equal(backend.downloads, 1);
 });
+
+test('quick sync skips existing file requests, downloads new modules and leaves presence untouched', async t => {
+  const { backend, engine, cfg } = await fixture(t);
+  await engine.run(); const requests = backend.requests;
+  backend.content.set(201, 'changed old file');
+  backend.resources.push({ ...resource, moduleId: 202 }); backend.content.set(202, 'new lecture');
+  const quick = await engine.run({ mode: 'quick' });
+  assert.equal(backend.requests, requests + 1); assert.equal(quick.added.length, 1);
+  assert.equal(quick.updated.length, 0); assert.equal(quick.unchanged.length, 0); assert.equal(quick.skipped.length, 1);
+  backend.resources = [];
+  const missing = await engine.run({ mode: 'quick' }); assert.deepEqual(missing.remoteMissing, []);
+  const state = JSON.parse(await readFile(join(cfg.stateDir, 'manifest.json'), 'utf8'));
+  assert.equal(state.files['101:201:main'].present, true);
+  backend.resources = [resource];
+  const full = await engine.run(); assert.equal(full.updated.length, 1);
+  await assert.rejects(engine.run({ mode: 'quick', force: true }), /参数/);
+});
+
+test('quick sync retries failed new files and discovers new files inside an existing folder', async t => {
+  const { backend, engine } = await fixture(t);
+  backend.resources = [{ ...resource, type: 'folder' }];
+  const first = resourceFile(resource);
+  const second = { ...first, key: '101:201:extra', remotePath: 'extra.pdf' };
+  let files = [first]; backend.listFiles = async () => files;
+  await engine.run({ mode: 'quick' });
+  files = [first, second]; backend.failures.add(201);
+  const failed = await engine.run({ mode: 'quick' }); assert.equal(failed.failed.length, 1);
+  backend.failures.clear(); const retried = await engine.run({ mode: 'quick' });
+  assert.equal(retried.added.length, 1); assert.equal(retried.skipped.length, 1);
+  const requests = backend.requests; await engine.run({ mode: 'quick' }); assert.equal(backend.requests, requests);
+});

@@ -41,6 +41,6 @@ export class MoodleService {
   courses() { return this.withBackend(b => b.listCourses()); }
   resources(courseId: number) { approvedCourse(courseId, this.cfg.courses); return this.withBackend(b => b.listResources(courseId)); }
   download(courseId: number, moduleId: number) { requireSetup(this.cfg); approvedCourse(courseId, this.cfg.courses); return this.withBackend(b => new SyncEngine(this.cfg, b).run({ courseIds: [courseId], moduleId })); }
-  sync(force = false) { requireSetup(this.cfg); return this.withBackend(b => new SyncEngine(this.cfg, b).run({ force })); }
+  sync(force = false, mode: 'full' | 'quick' = 'full') { requireSetup(this.cfg); return this.withBackend(b => new SyncEngine(this.cfg, b).run({ force, mode })); }
   status() { return { setupConfirmed: this.cfg.setupConfirmed, readyToSync: this.cfg.setupConfirmed && this.cfg.courses.length > 0, nextStep: !this.cfg.setupConfirmed ? '运行 npm run setup 确认目录与课程' : !this.cfg.courses.length ? '选择已观察到的课程' : '可手动同步', selectedCourses: this.cfg.courses, coursesFile: this.cfg.coursesFile, directories: { materials: this.cfg.materialsDir, state: this.cfg.stateDir }, authentication: 'dedicated-browser-session', automaticScheduling: false }; }
 }

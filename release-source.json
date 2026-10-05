@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "c1d163645680ed2f846ba202d3589461e9ea9b85",
+  "sourceCommit": "efe272de0e0dac3aac9562f2b0edd5971f1f46e3",
   "sourceSubdirectory": "moodle-mcp",
   "dirty": false,
   "finalCandidate": true,
@@ -13,7 +13,7 @@
     },
     {
       "path": "src/cli.ts",
-      "sha256": "ee9eba6988f407c35c7eba9f2654bd24a364ea7c13672590deabc5e1c337a124",
+      "sha256": "ee384251c87b0aba4ac71d8c393156c6d3fdaa43f94f0a5b8deccbbb5febb310",
       "mode": 420
     },
     {
@@ -38,22 +38,22 @@
     },
     {
       "path": "src/server.ts",
-      "sha256": "2a115a67b74c5eb4cfc9a178e379afbaa9d5b61a38aa8546eec15692a01a0459",
+      "sha256": "3ca5d253767bcceb02acd42d50b554d9d99310d3a92107af8a33ff2a5f393df9",
       "mode": 420
     },
     {
       "path": "src/service.ts",
-      "sha256": "2be754daad909a26aac16fc739b211915f46a0878955be33df52855b5f8bc96b",
+      "sha256": "e5a5b086dbfdb23bda0381a14cf7a5f5ef3708259320032b0da387f741973e60",
       "mode": 420
     },
     {
       "path": "src/sync.ts",
-      "sha256": "22295a7e0ff7ab0dbae48b2925bffc221ce4fe31aac2ee750124e4e15195b4fe",
+      "sha256": "3d10f597340ac4d35449b0f1dddcb7ad0bfa28f018e4f5e25e4cc46e87844857",
       "mode": 420
     },
     {
       "path": "src/setup.ts",
-      "sha256": "e953427682bf7c97f579f73ab74e3ba40fd46f0253bc2f86d15e29984bf4dd7d",
+      "sha256": "284b1bef5eee93a70fd4d293bd8f4f0a693e9800a802f991acae59f83a06c07b",
       "mode": 420
     },
     {
@@ -68,7 +68,7 @@
     },
     {
       "path": "test/core.test.ts",
-      "sha256": "97c2ec8974d826a386c2998e31624348c81d4644a416867b02576e229bc58a88",
+      "sha256": "dd91dabad598f8da4082a1fced02c412a5762124e7e35faf251827319a451fe4",
       "mode": 420
     },
     {
@@ -93,7 +93,7 @@
     },
     {
       "path": "test/setup.test.ts",
-      "sha256": "246ae7bfe759252365f7fc65abf23426a6de803787ba389469429d40ada78577",
+      "sha256": "48467da1a1fa5bdf85977a4d92e469f7016aae28e67e76ff887250366ef2f8c1",
       "mode": 420
     },
     {
@@ -123,22 +123,22 @@
     },
     {
       "path": "docs/TESTING.md",
-      "sha256": "0880cc562d77e99459dc5b8026e3ccfc5082298a8dcc3e0cd1ab2a21fa7ffb2d",
+      "sha256": "04f36738cad64ec5a0bdc1025a78347a048ad8da10825060155275174261bacf",
       "mode": 420
     },
     {
       "path": "skills/unnc-moodle/SKILL.md",
-      "sha256": "749e89e7d44dd268fdb4ace02632906b9baf04619d798bf2f50e5d5227e34f12",
+      "sha256": "1b680618b1fa4328e14aa1d2b454872661ae033c482ac5c44ff71480fe4f121d",
       "mode": 420
     },
     {
       "path": "package.json",
-      "sha256": "6d6d91bc81c5918f647425cf28d1ab17b8f6edda90a413214919e9fe8ca5f9e9",
+      "sha256": "52fefb20c5afb7b9dfd315fee64db9532558ade2db90f072f31c966020ad2a7e",
       "mode": 420
     },
     {
       "path": "package-lock.json",
-      "sha256": "dcb2dfd593a6eb9fea26cb05a50e42acea145203f33ed07a2b3dd89a348f083c",
+      "sha256": "76d48aee7a083da843da291a68acadd6f9297cda64471ea38193d897cd7e0f75",
       "mode": 420
     },
     {
@@ -148,7 +148,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "1cfbbadca4e0da535f033aff800df7781e3eac717f6f2da996bb430b08056468",
+      "sha256": "abde1d25c266ebf58c7c67bcc118d961a871caff608a2558c18bbfa392e8a9ec",
       "mode": 420
     },
     {

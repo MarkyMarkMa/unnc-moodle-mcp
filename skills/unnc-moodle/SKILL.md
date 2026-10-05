@@ -19,9 +19,11 @@ description: 在 Codex 中设置和使用 UNNC Moodle 资料同步 MCP，包括�
 
 更换根目录使用 `npm run setup`，不把改路径说成迁移；迁移旧资料按 README 停止进程、备份和整体复制。CLI 改配置后重启现有 MCP，并回读设置。MCP `select_courses`/`confirm_setup` 更新当前进程，不要求为了换名单重启。
 
+新增课程时先调用 list_courses 展示未选择课程，由用户明确选择后调用 select_courses 的 mode: add，保留现有名单；用户给出课程名称时先解析真实ID，不猜测，不自动批准所有新课程。
+
 ## 日常同步
 
-回读设置与登录状态。设置已完成且名单非空时，按用户请求调用一次 `sync_courses`。部分失败只针对已发现的失败资源决定是否单独重试；下载已内置最多三次 NETWORK/PARSE_FAILED 尝试，预算耗尽后不要无限循环。
+回读设置与登录状态。设置已完成且名单非空时，按用户请求调用一次 `sync_courses`。用户要求快速或只下载新增时传 mode: quick；完整检查传 mode: full（默认）。快速模式的 skipped 是未检查旧文件，不能报告成“旧文件未变化”；提醒它不会发现旧文件替换或修复本地丢失。新课程获批加入后，快速模式会下载它的所有未记录资料。部分失败只针对已发现的失败资源决定是否单独重试；下载已内置最多三次 NETWORK/PARSE_FAILED 尝试，预算耗尽后不要无限循环。
 
 检查业务摘要里的 failed、needsLogin、stoppedReason，MCP 调用成功不等于同步成功。429 停止当前批次，告知稍后手动重试，不立即再次同步。LOCAL_IO 先解决磁盘/权限，INTERNAL 或持续解析失败报告具体阶段与尝试次数，不猜根因。
 

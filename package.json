@@ -1,6 +1,6 @@
 {
   "name": "local-moodle-mcp",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -19,7 +19,9 @@
     "setup": "node dist/src/cli.js setup",
     "settings": "node dist/src/cli.js settings",
     "doctor": "node scripts/doctor.mjs",
-    "codex-config": "node dist/src/cli.js codex-config"
+    "codex-config": "node dist/src/cli.js codex-config",
+    "sync:quick": "node dist/src/cli.js sync --quick",
+    "add": "node dist/src/cli.js add"
   },
   "dependencies": {
     "@modelcontextprotocol/client": "2.3.0",

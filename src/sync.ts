@@ -99,15 +99,17 @@ export class SyncEngine {
     if (code !== 'NEEDS_LOGIN' && code !== 'RATE_LIMITED') return false;
     summary.stoppedReason = code; summary.needsLogin = code === 'NEEDS_LOGIN'; return true;
   }
-  async run(options: { courseIds?: number[]; moduleId?: number; force?: boolean } = {}): Promise<SyncSummary> {
+  async run(options: { courseIds?: number[]; moduleId?: number; force?: boolean; mode?: 'full' | 'quick' } = {}): Promise<SyncSummary> {
     requireSetup(this.cfg);
+    if (options.mode === 'quick' && options.force) throw new MoodleError('INVALID_INPUT');
     const ids = options.courseIds ?? this.cfg.courses.map(c => c.id); ids.forEach(id => approvedCourse(id, this.cfg.courses));
     if (!ids.length || new Set(ids).size !== ids.length) throw new MoodleError('INVALID_INPUT');
     await privateDirectory(this.cfg.dataDir); await privateDirectory(this.cfg.stateDir); await privateDirectory(this.cfg.materialsDir);
     const state = await this.load();
+    const recordedModules = new Set(Object.values(state.files).map(f => `${f.courseId}:${f.moduleId}`));
     const summary: SyncSummary = { added: [], updated: [], unchanged: [], failed: [], skipped: [], remoteMissing: [], needsLogin: false };
     for (const courseId of ids) {
-      let complete = options.moduleId === undefined; const seen = new Set<string>();
+      let complete = options.moduleId === undefined && options.mode !== 'quick'; const seen = new Set<string>();
       try {
         let resources: Awaited<ReturnType<Backend['listResources']>>;
         try { resources = await this.backend.listResources(courseId); } catch (e) { throw atStage(e, 'discovery'); }
@@ -119,6 +121,9 @@ export class SyncEngine {
           if (!['file', 'folder'].includes(resource.type)) {
             summary.skipped.push({ courseId, moduleId: resource.moduleId, title: resource.title, reason: resource.type === 'url' ? '外链资源仅报告，不自动跟随' : `不下载 ${resource.type} 类型` }); continue;
           }
+          if (options.mode === 'quick' && resource.type === 'file' && recordedModules.has(`${courseId}:${resource.moduleId}`)) {
+            summary.skipped.push({ courseId, moduleId: resource.moduleId, title: resource.title, reason: '快速模式：已有模块未检查更新或本地完整性' }); continue;
+          }
           let files: RemoteFile[];
           try { files = await this.backend.listFiles(resource); }
           catch (e) {
@@ -127,6 +132,9 @@ export class SyncEngine {
           }
           for (const file of files) {
             seen.add(file.key);
+            if (options.mode === 'quick' && state.files[file.key]) {
+              summary.skipped.push({ courseId, moduleId: resource.moduleId, title: resource.title, reason: '快速模式：已有文件未检查更新或本地完整性' }); continue;
+            }
             try { await this.processFile(file, state, summary, options.force ?? false); }
             catch (e) {
               complete = false; const f = failure(e, 'download'); summary.failed.push({ courseId, moduleId: resource.moduleId, key: file.key, ...f });
