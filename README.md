@@ -23,7 +23,7 @@ Download materials from selected courses, organize them by course and Moodle sec
 
 1. Download the ZIP attachment with the highest version number from [Releases](https://github.com/MarkyMarkMa/unnc-moodle-mcp/releases), then extract it to a permanent program directory.
 2. On macOS open `scripts/setup.command`; on Windows open `scripts/setup.cmd` (experimental). The launcher checks prerequisites, installs dependencies with your confirmation, builds the server, and starts setup.
-3. Sign in to Moodle in the dedicated browser, complete MFA, select your courses, and confirm the materials directory.
+3. Sign in to Moodle in the dedicated browser, complete MFA, select your courses, and confirm the materials directory. The final step recommends installing the Codex skill; press Enter to accept or enter n to skip.
 4. Follow [Connect to Codex](#connect-to-codex), then restart Codex.
 
 Alternatively, run these commands in the extracted program directory:
@@ -51,7 +51,7 @@ npm run update
 
 The updater downloads the newest published release, installs dependencies, and builds it before replacing the existing program. The installation path, settings, login session, and downloaded materials are retained. A failed replacement rolls back to the previous program.
 
-Stop all old Moodle MCP/CLI processes before updating. On first startup, version 0.4.5 moves legacy management files into `_moodle` beside `materials`; see [storage migration and recovery](docs/USAGE.md#management-directory-upgrade). Reconnect the Moodle MCP server or restart Codex after updating. Then continue synchronization in Codex.
+Stop all old Moodle MCP/CLI processes before updating. On first startup, version 0.4.5 moves legacy management files into `_moodle` beside `materials`; see [storage migration and recovery](docs/USAGE.md#management-directory-upgrade). Reconnect the Moodle MCP server or restart Codex after updating. Then continue synchronization in Codex. Program updates preserve separately installed skills; run `npm run install-skill` if you previously skipped installation.
 
 **Reinstalling older versions:** if `npm run update` is unavailable or the installed version cannot be upgraded directly, stop the old MCP server and reinstall using the installation steps above. Preserve the materials directory, `_moodle` (or legacy `state` and `courses.json`), and existing settings; remove only the program files. If program and data share a directory, back up the data separately before removing it. Use the previous program path where possible; otherwise update the MCP configuration to the new path. Existing materials do not need to be downloaded again.
 
@@ -67,7 +67,9 @@ npm run codex-config
 
 Add the printed `[mcp_servers.moodle_local]` block to your Codex MCP configuration, preserving other entries. This command prints configuration; it does not edit it. The server starts with `node /absolute/project/dist/src/server.js`.
 
-Optionally install the supplied skill by copying `skills/unnc-moodle` to `~/.codex/skills/unnc-moodle` (or the skills directory under a custom `CODEX_HOME`). Review an existing skill before replacing it. The supplied skill instructions are in Chinese; the MCP tools accept the same requests in English or Chinese.
+Setup offers the recommended skill installation on macOS and Windows. Existing users can run `npm run install-skill` separately; it does not require school login. The installer uses `~/.agents/skills/unnc-moodle`, reuses an existing legacy `~/.codex/skills/unnc-moodle`, or uses `CODEX_HOME/skills/unnc-moodle` when configured. Identical installations are left alone; differing or unsafe existing skills are not overwritten. Back up a differing skill outside the skills directory and review it before replacing it. A skill conflict does not undo completed MCP setup. The supplied skill instructions are in Chinese; the MCP tools accept the same requests in English or Chinese.
+
+For AI-assisted deployment, include the skill step unless the user opts out: after authorization, run `npm run install-skill -- --yes`, check its output, and finish MCP configuration separately. Installing the skill does not connect MCP. Users can then simply say “Synchronize my Moodle courses”; explicit `$unnc-moodle` invocation is optional.
 
 Restart Codex, then check `get_sync_settings` and `check_connection`. Downloads require a confirmed materials directory and selected courses. If login has expired, run `npm run login` and complete authentication yourself.
 
@@ -107,7 +109,7 @@ Future documentation changes should follow these conventions: formal, concise wo
 
 ## Windows (experimental)
 
-Use Node.js 24+ and Google Chrome, without WSL. Open `scripts/setup.cmd` or run the npm installation commands in PowerShell / CMD. Generate correctly escaped MCP paths with `npm run codex-config`. Install the skill under your user directory `.codex/skills/unnc-moodle`.
+Use Node.js 24+ and Google Chrome, without WSL. Open `scripts/setup.cmd` or run the npm installation commands in PowerShell / CMD. Generate correctly escaped MCP paths with `npm run codex-config`. The same setup wizard offers skill installation; its paths and standalone command are described above.
 
 Settings and the dedicated Chrome profile live under `%LOCALAPPDATA%/moodle-mcp`, falling back to `AppData/Local` under the user directory. Materials default to `Documents/MoodleSync`. Paste the materials path from `get_sync_settings` into File Explorer. Windows permissions depend on the user directory ACL; POSIX mode flags do not provide equivalent macOS protection.
 

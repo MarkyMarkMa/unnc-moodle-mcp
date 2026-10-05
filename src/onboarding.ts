@@ -1,6 +1,8 @@
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
 import { isAbsolute, resolve } from 'node:path';
+// @ts-ignore Standalone installer is shared by macOS and Windows.
+import { runInstaller } from '../../scripts/install-skill.mjs';
 import { config } from './config.js';
 import { MoodleService } from './service.js';
 import { MoodleError } from './model.js';
@@ -42,6 +44,9 @@ export async function onboarding(login: () => Promise<number>): Promise<void> {
     if ((await rl.question('确认保存这份设置？输入 yes：')).trim().toLowerCase() !== 'yes') return;
     await selectCourses(service, chosen.map(c => c.id));
     await confirmSetup(service, service.cfg.dataDir);
+    rl.close();
+    try { await runInstaller([]); }
+    catch (e) { console.error(`Skill 未安装：${(e as Error).message} 可稍后运行 npm run install-skill；MCP 设置已保存。`); }
     console.log('设置完成。运行 npm run sync，或在 Codex 中说“同步我的 Moodle 课件”。现有 MCP 进程需重启以读取新目录。');
   } finally { rl.close(); }
 }

@@ -1,6 +1,6 @@
 {
   "name": "local-moodle-mcp",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "private": true,
   "type": "module",
   "engines": {
@@ -23,7 +23,8 @@
     "sync:quick": "node dist/src/cli.js sync --quick",
     "add": "node dist/src/cli.js add",
     "organize": "node dist/src/cli.js sync --organize",
-    "update": "node scripts/update.mjs"
+    "update": "node scripts/update.mjs",
+    "install-skill": "node scripts/install-skill.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/client": "2.3.0",

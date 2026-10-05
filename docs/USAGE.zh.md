@@ -26,7 +26,7 @@ npm run setup
 
 运行 `npm run codex-config` 可以打印已填好本机 Node 和服务路径的配置区块（复制从 `[mcp_servers.moodle_local]` 开始的部分，不包含 npm 提示）；它不会修改任何配置。仓库也提供 `codex-mcp.example.toml`。用 `command -v node` 找到 Node 绝对路径，填写它以及本项目 `dist/src/server.js` 的绝对路径。经你确认后将该区块加入自己的 Codex MCP 配置；先备份并保留其他服务。不要把凭据写进配置。重启客户端后调用 `get_sync_settings` 与 `check_connection`，核对实际目录、课程和登录状态。
 
-安装 skill：把仓库里的 `skills/unnc-moodle` 整个目录复制到 `~/.codex/skills/unnc-moodle`（自定义 CODEX_HOME 时用其 skills 目录）。已有同名 skill 时先比较，不静默覆盖。重启后可以说：
+macOS 和 Windows 设置向导末尾均推荐安装 skill，回车接受，输入 n 跳过。补装运行 `npm run install-skill`，无需重新登录学校；已获安装授权的 AI 部署可运行 `npm run install-skill -- --yes` 并检查结果。安装目录规则见[接入 Codex](README.zh.md#接入-codex)，不同的已有 skill 不覆盖。程序更新不会覆盖独立安装的 skill；MCP 无需 skill 也能使用，装好后可自然语言匹配操作流程。若没有显示请重启 Codex，然后可以说：
 
 > 使用 $unnc-moodle 帮我设置 Moodle，之后同步我选择的课件。
 

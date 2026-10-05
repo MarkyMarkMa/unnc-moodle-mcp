@@ -23,7 +23,7 @@
 
 1. 从 [Releases](https://github.com/MarkyMarkMa/unnc-moodle-mcp/releases) 下载版本号最高的 ZIP 附件，解压至固定的程序目录。
 2. macOS 打开 `scripts/setup.command`；Windows 打开 `scripts/setup.cmd`（实验性）。安装入口检查运行环境，经确认后安装依赖、编译服务并启动设置向导。
-3. 在专用浏览器中登录 Moodle、完成 MFA，选择课程并确认资料保存目录。
+3. 在专用浏览器中登录 Moodle、完成 MFA，选择课程并确认资料保存目录。末尾推荐安装 Codex skill，按回车接受，输入 n 跳过。
 4. 按[接入 Codex](#接入-codex)完成配置，随后重启 Codex。
 
 也可在解压后的程序目录中运行：
@@ -51,7 +51,7 @@ npm run update
 
 更新器获取最新已发布版本，在安装依赖与编译成功后替换现有程序。安装路径、设置、登录会话和已下载资料均予以保留；替换失败时恢复旧程序。
 
-更新前停止所有旧 Moodle MCP/CLI 进程。0.4.5 首次启动会将旧管理文件收进与 `materials` 并列的 `_moodle`，详见[目录迁移与恢复](USAGE.zh.md#管理目录升级)。更新后重新连接 Moodle MCP 或重启 Codex，即可继续同步。
+更新前停止所有旧 Moodle MCP/CLI 进程。0.4.5 首次启动会将旧管理文件收进与 `materials` 并列的 `_moodle`，详见[目录迁移与恢复](USAGE.zh.md#管理目录升级)。更新后重新连接 Moodle MCP 或重启 Codex，即可继续同步。程序更新保留独立安装的 skill；此前跳过安装的用户可补运行 `npm run install-skill`。
 
 **旧版本重装：** 若 `npm run update` 不可用，或当前版本不支持直接升级，请停止旧 MCP 服务，按上述安装步骤重装。保留资料目录、`_moodle`（旧版为 `state`、`courses.json`）与现有设置，仅移除程序文件。若程序与资料共用目录，须先将资料单独备份。建议使用原程序路径；路径变化时需更新 MCP 配置。已有资料无需重新下载。
 
@@ -67,7 +67,9 @@ npm run codex-config
 
 将输出的 `[mcp_servers.moodle_local]` 区块加入 Codex MCP 配置，保留其他服务配置。此命令仅打印配置，不修改配置文件。服务入口为 `node /absolute/project/dist/src/server.js`。
 
-可选安装附带 skill：将 `skills/unnc-moodle` 复制到 `~/.codex/skills/unnc-moodle`；自定义 `CODEX_HOME` 时使用其 skills 目录。替换已有 skill 前应检查差异。附带 skill 的说明为中文，MCP 工具可处理英文或中文请求。
+macOS 和 Windows 设置向导均提供推荐的 skill 安装选项；老用户也可单独运行 `npm run install-skill`，无需重新登录学校。默认安装到 `~/.agents/skills/unnc-moodle`；已有旧 `~/.codex/skills/unnc-moodle` 时复用其位置；配置 `CODEX_HOME` 时安装到其 `skills/unnc-moodle`。相同版本不重复安装，不同或不安全的现有 skill 不覆盖；请先备份到技能目录之外并核对差异。skill 冲突不会撤销已完成的 MCP 设置。附带 skill 的说明为中文，MCP 工具可处理英文或中文请求。
+
+让 AI 协助部署时，除非用户选择跳过，应包含 skill 安装步骤：获得安装授权后执行 `npm run install-skill -- --yes`，检查结果，再单独完成 MCP 接入。安装 skill 不等于接入 MCP。之后直接说“同步我的 Moodle 课件”即可，无需每次输入 `$unnc-moodle`。
 
 重启 Codex 后检查 `get_sync_settings` 与 `check_connection`。下载前必须确认保存目录并选择课程。登录过期时运行 `npm run login`，由用户本人完成认证。
 

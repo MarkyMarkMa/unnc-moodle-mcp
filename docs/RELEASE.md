@@ -40,3 +40,5 @@ README 默认使用英文，顶部提供中文文档切换；两种语言保持 
 Windows 实验性预发布仍使用与 package.json 一致的数字版本号，并设置 GitHub Pre-release 标志。正文必须说明真实 Windows 验证状态、setup.cmd 入口和手动升级限制。现有 macOS 更新器会选择数字预发布版，不得宣称现有用户不会收到该更新。Windows 自动升级不属于本次支持范围。
 
 0.4.5 管理目录变更：发布说明必须提示升级前停止旧 MCP/CLI，首次启动迁移 state、默认 courses.json 及识别到的旧升级备份到 _moodle。跨平台共用实现，Windows 仍为实验性；跨根目录搬家仍需手动保留完整数据。
+
+0.4.6：设置末尾提供推荐的 skill 安装选项；发布说明包含老用户 npm run install-skill 补装及程序更新不替换独立 skill 的限制。安装器与其测试进入公开白名单。

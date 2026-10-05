@@ -7,7 +7,7 @@ description: 在 Codex 中设置和使用 UNNC Moodle 资料同步 MCP，包括�
 
 ## 未接入
 
-先定位用户下载的公开项目和 README。项目提供 `scripts/setup.command`（macOS 双击入口）、`scripts/setup.cmd`（Windows 实验性入口）、`npm run setup` 和 `npm run doctor`。安装需要 Node.js 24+ 和 Google Chrome。说明将安装项目依赖；用户已授权安装时继续，否则确认。按 README 生成/填写 Codex 的 MCP 配置，修改全局配置前说明具体改动并保留现有配置。skill 本身不安装 MCP、不授权全局配置变更。
+先定位用户下载的公开项目和 README。项目提供 `scripts/setup.command`（macOS 双击入口）、`scripts/setup.cmd`（Windows 实验性入口）、`npm run setup` 和 `npm run doctor`。安装需要 Node.js 24+ 和 Google Chrome。两平台设置向导完成后均推荐安装本 skill，可选择跳过。协助部署且用户已授权安装时，除非用户选择跳过，运行 npm run install-skill -- --yes 并核对结果，不把仓库里存在 SKILL.md 当作已经安装。默认使用用户 .agents/skills，已有 .codex/skills/unnc-moodle 时复用旧位置，自定义 CODEX_HOME 则使用其中的 skills。不同现有 skill 不覆盖，先展示差异并保留备份。安装 skill 不等于接入 MCP，也不保证每次请求都会自动匹配。说明将安装项目依赖；用户已授权安装时继续，否则确认。按 README 生成/填写 Codex 的 MCP 配置，修改全局配置前说明具体改动并保留现有配置。skill 本身不安装 MCP、不授权全局配置变更。
 
 ## 程序更新
 

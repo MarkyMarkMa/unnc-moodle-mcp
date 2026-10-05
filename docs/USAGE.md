@@ -10,6 +10,10 @@ The update command prepares and builds a published ZIP in a separate directory. 
 
 The updater retains a `previous` program backup and an `update.json` receipt in the directory printed by the command. Failed replacements are rolled back. Forced termination or power loss may require manual recovery: preserve the update directory, verify the target and backup in `update.json`, and restore the program before clearing stale locks. Never remove locks while an update or synchronization is active.
 
+## Codex skill
+
+Setup offers recommended skill installation on both macOS and Windows. Press Enter to accept or n to skip. To install later, run `npm run install-skill`; an authorized AI deployment can use `npm run install-skill -- --yes`. The installer reports the selected location, installs without school login, and preserves any differing existing skill. See [Connect to Codex](../README.md#connect-to-codex) for destination rules and MCP configuration. MCP tools work without this skill; installing it enables Codex to match the supplied workflow to natural-language requests. Program updates do not overwrite independently installed skills.
+
 ## Synchronization modes
 
 | Mode | CLI command | MCP request | Behavior |
