@@ -17,6 +17,10 @@ test('official MCP client discovers tools and invokes actual server with validat
     assert.deepEqual(list.tools.map(t => t.name).sort(), ['confirm_setup', 'select_courses', 'check_connection', 'download_resource', 'get_sync_settings', 'list_courses', 'list_resources', 'sync_courses'].sort());
     const result = await client.callTool({ name: 'get_sync_settings', arguments: {} });
     assert.equal(result.isError, undefined); assert.match(JSON.stringify(result), /Other student course/);
+    const organize = await client.callTool({ name: 'sync_courses', arguments: { mode: 'organize' } });
+    assert.equal(organize.isError, true); assert.match(JSON.stringify(organize), /SETUP_REQUIRED/);
+    const incompatible = await client.callTool({ name: 'sync_courses', arguments: { mode: 'organize', forceContentCheck: true } });
+    assert.equal(incompatible.isError, true);
     const blocked = await client.callTool({ name: 'sync_courses', arguments: {} });
     assert.equal(blocked.isError, true); assert.match(JSON.stringify(blocked), /SETUP_REQUIRED/);
     const wrongDirectory = await client.callTool({ name: 'confirm_setup', arguments: { dataDir: join(root, 'other'), confirmed: true } });

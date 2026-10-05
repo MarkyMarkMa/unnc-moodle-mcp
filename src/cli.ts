@@ -23,7 +23,7 @@ try {
       const args = process.argv.slice(3);
       if (!args.length) throw new MoodleError('INVALID_INPUT');
       result = await selectCourses(service, args.length === 1 && args[0] === '--clear' ? [] : args.map(Number), command === 'add' ? 'add' : 'replace');
-    } else result = command === 'check' ? await service.check() : command === 'courses' ? await service.courses() : command === 'resources' ? await service.resources(Number(process.argv[3])) : command === 'sync' ? await service.sync(process.argv.includes('--force'), process.argv.includes('--quick') ? 'quick' : 'full') : command === 'settings' ? service.status() : (() => { throw new MoodleError('INVALID_INPUT'); })();
+    } else result = command === 'check' ? await service.check() : command === 'courses' ? await service.courses() : command === 'resources' ? await service.resources(Number(process.argv[3])) : command === 'sync' ? await service.sync(process.argv.includes('--force'), process.argv.includes('--organize') ? 'organize' : process.argv.includes('--quick') ? 'quick' : 'full') : command === 'settings' ? service.status() : (() => { throw new MoodleError('INVALID_INPUT'); })();
     console.log(JSON.stringify(result, null, 2));
   }
 } catch (e) { console.error(JSON.stringify(failure(e))); process.exitCode = 1; }

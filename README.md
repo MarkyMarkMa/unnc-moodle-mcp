@@ -57,11 +57,16 @@ skill 负责引导，MCP 负责硬性检查。**未确认目录或名单为空�
 
 持久设置默认 `~/Library/Application Support/moodle-mcp/settings.json`，向导在确认后记录所选根目录和课程配置路径。根目录下：
 
-- `materials/`：资料，按 `课程ID/模块ID/路径槽/v0001/文件名` 保存。
+- `materials/`：日常资料，按 `英文课程名/Moodle 原始分区/文件名` 保存；Moodle 文件夹保留名称与内部子目录。未命名分区使用 `General`。
+- `materials/.history/`：内部历史版本，资源 ID 与版本号只在这里出现。
 - `state/`：增量状态、临时文件及操作锁。
 - `courses.json`：课程白名单。
 
-用 Finder 的 **⌘⇧G** 粘贴 `get_sync_settings` 中的 materials 路径查看。路径槽避免文件重名，版本目录保留历史；内容校验不代替 Git 源码版本管理。
+用 Finder 的 **⌘⇧G** 粘贴 `get_sync_settings` 中的 materials 路径查看。正常浏览无需进入 `.history`。同名文件用 `(2)` 等可读后缀区分，课程名采用已选课程名单中的名称；不会自动翻译课程或分区。内容校验不代替 Git 源码版本管理。
+
+老师更新后，可读位置自动更新；旧版本留在 `.history`。可读文件与历史独立，macOS 支持时使用 copy-on-write，否则复制会占用额外空间。用户修改过的课件不会覆盖，远端最新版另存带后缀的文件；自行添加的笔记同样保留。分区改名时仅移动程序管理且未修改的可读文件。远端移除资料时本地仍保留。
+
+升级到 0.4.1 后，运行 `npm run organize`（或 `sync_courses` 的 `mode: "organize"`）只读取课程/文件夹目录、整理已经下载的文件，不下载课件。旧编号目录逐文件迁入 `.history`，同步状态同时更新，空旧目录清理；中断后可重跑；若进程恰在可读文件发布与状态提交之间退出，可能留下未登记副本，下次会保守另存，避免误删用户文件。完整同步与快速同步也自动维护布局。整理需已有登录与确认设置，建议先备份 `materials` 和 `state`。
 
 绝对路径环境变量可覆盖：`MOODLE_DATA_DIR`、`MOODLE_COURSES_FILE`、`MOODLE_SETTINGS_FILE`、`MOODLE_PROFILE_DIR`。名单与设置必须是各自专用的 JSON 文件，不能放入 materials、state 或浏览器 profile 内，不能指向同一文件。环境变量优先于持久设置；CLI 与 MCP 应使用一致的覆盖值。改变根目录或名单文件路径会要求重新确认，不能直接把旧确认用于新位置。`MOODLE_HEADLESS=false` 显示操作窗口。
 
@@ -73,7 +78,7 @@ skill 负责引导，MCP 负责硬性检查。**未确认目录或名单为空�
 
 日常只找新增资料：`npm run sync:quick`，或对 Codex 说“快速同步 Moodle 课件”。MCP 调用 `sync_courses` 的 `mode: "quick"`；默认仍为 `full`，完整检查用 `npm run sync`。
 
-快速模式读取已选课程列表，只下载 manifest 中没有记录的模块/文件，不读取已有课件做哈希校验，也不请求旧文件的 ETag。已存在文件列入 skipped，不能说它们已经验证未变化。文件夹仍需读取其列表，以发现新文件及重试上次部分失败；已有文件内容不检查。快速模式不报告远端删除，不修复丢失/损坏的本地旧文件；检查这些问题请运行完整模式。`--quick` 与 `--force` 不可同时使用。
+快速模式读取已选课程列表，只下载 manifest 中没有记录的模块/文件，不请求旧文件的 ETag；维护可读目录时会读取本地文件并校验内容。已存在文件列入 skipped，不能说它们已经验证未变化。文件夹仍需读取其列表，以发现新文件及重试上次部分失败；已有文件内容不检查。快速模式不报告远端删除；历史文件完整时可以重建丢失的可读入口，但不重新下载丢失/损坏的历史文件；检查这些问题请运行完整模式。`--quick` / `--organize` 与 `--force` 不可同时使用。
 
 第四门课或下学期课程：先 `npm run courses` 或调用 `list_courses` 查看真实课程，用户确认后执行 `npm run add -- COURSE_ID ...`，或 MCP `select_courses` 传 `mode: "add"`。它保留原名单，拒绝未发现ID。新课没有记录的资料将在下一次快速同步中全部下载。CLI添加后重启已运行MCP；MCP添加立即对当前进程生效。首次设置尚未确认时仍必须确认目录。
 

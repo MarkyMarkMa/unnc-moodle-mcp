@@ -93,10 +93,21 @@ export class BrowserBackend implements Backend {
     return p;
   }
   private async anchors(p: Page, selector = '#region-main a[href], main a[href]'): Promise<Anchor[]> {
-    return p.locator(selector).evaluateAll(es => es.map(e => ({
+    return p.locator(selector).evaluateAll(es => es.map(e => {
+      let section = e.closest('.section, [data-for="section"]');
+      // Moodle also calls the inner activity UL 'section'; climb to the
+      // enclosing teaching section that actually carries its title.
+      while (section && !section.querySelector('.sectionname, .section-title, [data-for="section_title"]') && !section.hasAttribute('aria-labelledby')) {
+        section = section.parentElement?.closest('.section, [data-for="section"]') ?? null;
+      }
+      const heading = section?.querySelector('.sectionname, .section-title, [data-for="section_title"]');
+      const labelled = section?.getAttribute('aria-labelledby')?.split(/\s+/).map(id => document.getElementById(id)?.textContent ?? '').join(' ');
+      const sectionName = (heading?.textContent || labelled || '').trim().replace(/\s+/g, ' ');
+      return {
       href: e.getAttribute('href') ?? '', text: (e.textContent ?? '').trim().replace(/\s+/g, ' '),
       context: (e.closest('.activity')?.textContent ?? '').trim().replace(/\s+/g, ' ').slice(0, 300),
-    })));
+      ...(sectionName ? { sectionName } : {}),
+    }; }));
   }
   async checkConnection() {
     try {
@@ -207,7 +218,10 @@ export class BrowserBackend implements Backend {
     const result = new Map<number, Resource>();
     const collect = async () => {
       await this.courseContentReady(p);
-      for (const r of parseResources(courseId, await this.anchors(p))) result.set(r.moduleId, r);
+      for (const r of parseResources(courseId, await this.anchors(p))) {
+        const previous = result.get(r.moduleId);
+        result.set(r.moduleId, { ...previous, ...r, ...(r.sectionName || previous?.sectionName ? { sectionName: r.sectionName ?? previous?.sectionName } : {}) });
+      }
     };
     await collect();
     const sectionUrls = await p.locator('#region-main a[href], main a[href]').evaluateAll(es => [...new Set(es.map(e => e.getAttribute('href') ?? '').filter(h => /\/course\/section\.php\?id=\d+/.test(h)))]);

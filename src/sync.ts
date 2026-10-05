@@ -1,14 +1,16 @@
 import { constants } from 'node:fs';
 import { link, open, readFile, rename, unlink, lstat } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
-import { join, relative } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { z } from 'zod';
 import { approvedCourse, requireSetup, type Config } from './config.js';
 import { MoodleError, failure, atStage, type Backend, type Manifest, type RemoteFile, type StoredFile, type SyncSummary } from './model.js';
 import { fileHash, fileSlot, inside, privateDirectory, regularFile, removeStaging, safeDirectory, safeFilename } from './safety.js';
 
+import { publishLatest, pruneEmpty } from './layout.js';
+
 const versionSchema = z.object({ version: z.number().int().positive(), relativePath: z.string(), filename: z.string(), sha256: z.string().regex(/^[a-f0-9]{64}$/), bytes: z.number().int().nonnegative(), savedAt: z.string() });
-const storedSchema = z.object({ key: z.string(), courseId: z.number().int(), moduleId: z.number().int().positive(), remotePath: z.string(), title: z.string(), etag: z.string().optional(), lastModified: z.string().optional(), mime: z.string().optional(), present: z.boolean(), lastCheckedAt: z.string(), versions: z.array(versionSchema).min(1) });
+const storedSchema = z.object({ readablePath: z.string().optional(), readableHash: z.string().regex(/^[a-f0-9]{64}$/).optional(), readableFilename: z.string().optional(), key: z.string(), courseId: z.number().int(), moduleId: z.number().int().positive(), remotePath: z.string(), title: z.string(), etag: z.string().optional(), lastModified: z.string().optional(), mime: z.string().optional(), present: z.boolean(), lastCheckedAt: z.string(), versions: z.array(versionSchema).min(1) });
 const manifestSchema = z.object({ schemaVersion: z.literal(1), files: z.record(z.string(), storedSchema) });
 
 export class SyncEngine {
@@ -21,6 +23,7 @@ export class SyncEngine {
       for (const [key, f] of Object.entries(state.files)) {
         if (key !== f.key || !Number.isSafeInteger(f.courseId) || f.courseId <= 0) throw new Error();
         for (const v of f.versions) inside(this.cfg.materialsDir, v.relativePath);
+        if (f.readablePath) { inside(this.cfg.materialsDir, f.readablePath); if (f.readablePath.startsWith('.history/')) throw new MoodleError('STATE_INVALID'); }
       }
       return state;
     } catch (e) {
@@ -72,7 +75,7 @@ export class SyncEngine {
         summary.unchanged.push({ key: file.key, path: local!, network: 'content_checked', attempts: downloaded.attempts }); return;
       }
       const filename = safeFilename(downloaded.filename ?? file.filename ?? file.title);
-      const slot = `${file.courseId}/${file.moduleId}/${fileSlot(file.remotePath)}`;
+      const slot = `.history/${file.courseId}/${file.moduleId}/${fileSlot(file.remotePath)}`;
       let number = (latest?.version ?? 0) + 1; let destination = '';
       for (;;) {
         const dir = await safeDirectory(this.cfg.materialsDir, `${slot}/v${String(number).padStart(4, '0')}`);
@@ -81,7 +84,7 @@ export class SyncEngine {
         catch (e) { if ((e as NodeJS.ErrnoException).code !== 'EEXIST') throw e; number++; }
       }
       const now = new Date().toISOString();
-      const record: StoredFile = { key: file.key, courseId: file.courseId, moduleId: file.moduleId, remotePath: file.remotePath, title: file.title,
+      const record: StoredFile = { ...(old ?? {}), key: file.key, courseId: file.courseId, moduleId: file.moduleId, remotePath: file.remotePath, title: file.title,
         etag: downloaded.etag, lastModified: downloaded.lastModified, mime: downloaded.mime, present: true, lastCheckedAt: now,
         versions: [...(old?.versions ?? []), { version: number, relativePath: relative(this.cfg.materialsDir, destination), filename, sha256: downloaded.sha256, bytes: downloaded.bytes, savedAt: now }] };
       try { await this.commitRecord(file.key, record, state); }
@@ -89,6 +92,37 @@ export class SyncEngine {
       (old ? summary.updated : summary.added).push({ key: file.key, path: destination, attempts: downloaded.attempts });
     } catch (e) { throw atStage(e, 'local'); }
     finally { await removeStaging(downloaded?.stagingPath); }
+  }
+  private async organize(file: RemoteFile, state: Manifest): Promise<string | undefined> {
+    const initial = state.files[file.key];
+    if (!initial) return;
+    let record: StoredFile = initial;
+    for (let i = 0; i < record.versions.length; i++) {
+      const version = record.versions[i]!;
+      if (version.relativePath.startsWith('.history/')) {
+        const legacyPath = version.relativePath.slice('.history/'.length);
+        const legacy = /^\d+\/\d+\//.test(legacyPath) ? await regularFile(this.cfg.materialsDir, legacyPath) : undefined;
+        const archived = await regularFile(this.cfg.materialsDir, version.relativePath);
+        if (legacy && archived && await fileHash(legacy) === await fileHash(archived)) {
+          await unlink(legacy); await pruneEmpty(this.cfg.materialsDir, legacy);
+        }
+        continue;
+      }
+      const old = await regularFile(this.cfg.materialsDir, version.relativePath);
+      if (!old) continue;
+      const nextPath = '.history/' + version.relativePath;
+      await safeDirectory(this.cfg.materialsDir, dirname(nextPath));
+      const destination = join(this.cfg.materialsDir, nextPath);
+      const existing = await regularFile(this.cfg.materialsDir, nextPath);
+      if (existing) {
+        if (await fileHash(existing) !== await fileHash(old)) throw new MoodleError('LOCAL_IO');
+      } else await link(old, destination);
+      const changed: StoredFile = { ...record, versions: record.versions.map((v, n) => n === i ? { ...v, relativePath: nextPath } : v) };
+      await this.commitRecord(file.key, changed, state);
+      record = changed;
+      await unlink(old); await pruneEmpty(this.cfg.materialsDir, old);
+    }
+    return publishLatest(this.cfg, file, state, record => this.commitRecord(file.key, record, state));
   }
   private async commitRecord(key: string, record: StoredFile, state: Manifest): Promise<void> {
     const previous = state.files[key]; state.files[key] = record;
@@ -99,17 +133,16 @@ export class SyncEngine {
     if (code !== 'NEEDS_LOGIN' && code !== 'RATE_LIMITED') return false;
     summary.stoppedReason = code; summary.needsLogin = code === 'NEEDS_LOGIN'; return true;
   }
-  async run(options: { courseIds?: number[]; moduleId?: number; force?: boolean; mode?: 'full' | 'quick' } = {}): Promise<SyncSummary> {
+  async run(options: { courseIds?: number[]; moduleId?: number; force?: boolean; mode?: 'full' | 'quick' | 'organize' } = {}): Promise<SyncSummary> {
     requireSetup(this.cfg);
-    if (options.mode === 'quick' && options.force) throw new MoodleError('INVALID_INPUT');
+    if (options.mode !== undefined && options.mode !== 'full' && options.force) throw new MoodleError('INVALID_INPUT');
     const ids = options.courseIds ?? this.cfg.courses.map(c => c.id); ids.forEach(id => approvedCourse(id, this.cfg.courses));
     if (!ids.length || new Set(ids).size !== ids.length) throw new MoodleError('INVALID_INPUT');
     await privateDirectory(this.cfg.dataDir); await privateDirectory(this.cfg.stateDir); await privateDirectory(this.cfg.materialsDir);
     const state = await this.load();
-    const recordedModules = new Set(Object.values(state.files).map(f => `${f.courseId}:${f.moduleId}`));
     const summary: SyncSummary = { added: [], updated: [], unchanged: [], failed: [], skipped: [], remoteMissing: [], needsLogin: false };
     for (const courseId of ids) {
-      let complete = options.moduleId === undefined && options.mode !== 'quick'; const seen = new Set<string>();
+      let complete = options.moduleId === undefined && (options.mode === undefined || options.mode === 'full'); const seen = new Set<string>();
       try {
         let resources: Awaited<ReturnType<Backend['listResources']>>;
         try { resources = await this.backend.listResources(courseId); } catch (e) { throw atStage(e, 'discovery'); }
@@ -121,9 +154,6 @@ export class SyncEngine {
           if (!['file', 'folder'].includes(resource.type)) {
             summary.skipped.push({ courseId, moduleId: resource.moduleId, title: resource.title, reason: resource.type === 'url' ? '外链资源仅报告，不自动跟随' : `不下载 ${resource.type} 类型` }); continue;
           }
-          if (options.mode === 'quick' && resource.type === 'file' && recordedModules.has(`${courseId}:${resource.moduleId}`)) {
-            summary.skipped.push({ courseId, moduleId: resource.moduleId, title: resource.title, reason: '快速模式：已有模块未检查更新或本地完整性' }); continue;
-          }
           let files: RemoteFile[];
           try { files = await this.backend.listFiles(resource); }
           catch (e) {
@@ -132,11 +162,26 @@ export class SyncEngine {
           }
           for (const file of files) {
             seen.add(file.key);
-            if (options.mode === 'quick' && state.files[file.key]) {
-              summary.skipped.push({ courseId, moduleId: resource.moduleId, title: resource.title, reason: '快速模式：已有文件未检查更新或本地完整性' }); continue;
+            try {
+              const previous = state.files[file.key];
+              const previousReadable = previous?.readablePath ? await regularFile(this.cfg.materialsDir, previous.readablePath) : undefined;
+              if (previousReadable && previous?.readableHash && await fileHash(previousReadable) !== previous.readableHash) {
+                summary.skipped.push({ courseId, moduleId: resource.moduleId, title: resource.title, reason: '保留用户修改的课件；远端版本使用独立可读文件' });
+              }
+              await this.organize(file, state);
+              if (options.mode === 'organize' || (options.mode === 'quick' && state.files[file.key])) {
+                summary.skipped.push({ courseId, moduleId: resource.moduleId, title: resource.title, reason: options.mode === 'organize' ? '仅整理本地资料：未下载或检查远端内容' : '快速模式：已有文件未检查远端内容更新' }); continue;
+              }
+              await this.processFile(file, state, summary, options.force ?? false);
+              const readable = await this.organize(file, state);
+              if (readable) for (const list of [summary.added, summary.updated, summary.unchanged]) {
+                const entry = list.find(e => e.key === file.key); if (entry) entry.path = readable;
+              }
             }
-            try { await this.processFile(file, state, summary, options.force ?? false); }
             catch (e) {
+              summary.added = summary.added.filter(entry => entry.key !== file.key);
+              summary.updated = summary.updated.filter(entry => entry.key !== file.key);
+              summary.unchanged = summary.unchanged.filter(entry => entry.key !== file.key);
               complete = false; const f = failure(e, 'download'); summary.failed.push({ courseId, moduleId: resource.moduleId, key: file.key, ...f });
               if (this.stop(f.code, summary)) return summary;
             }

@@ -45,10 +45,14 @@ export type ResourceType = 'file' | 'folder' | 'url' | 'page' | 'book' | 'unsupp
 export interface Resource {
   courseId: number; moduleId: number; title: string; type: ResourceType; url: string;
   format?: string; modifiedAt?: string;
+  sectionName?: string;
 }
 export interface RemoteFile {
   courseId: number; moduleId: number; key: string; title: string; url: string;
   remotePath: string; filename?: string;
+  sectionName?: string;
+  /** Nested directories inside a published Moodle folder, excluding its title and filename. */
+  relativeFolder?: string;
 }
 export interface DownloadResult {
   attempts?: number;
@@ -67,6 +71,7 @@ export interface Version { version: number; relativePath: string; filename: stri
 export interface StoredFile {
   key: string; courseId: number; moduleId: number; remotePath: string; title: string;
   etag?: string; lastModified?: string; mime?: string; present: boolean; lastCheckedAt: string; versions: Version[];
+  readablePath?: string; readableHash?: string; readableFilename?: string;
 }
 export interface Manifest { schemaVersion: 1; files: Record<string, StoredFile>; }
 export interface SyncSummary {

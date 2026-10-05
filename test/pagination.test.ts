@@ -4,6 +4,25 @@ import { chromium, type BrowserContext, type Page } from 'playwright';
 import { BrowserBackend } from '../src/browser.js';
 import { config } from '../src/config.js';
 
+test('resource discovery reads enclosing Moodle section titles without mixing sections', async t => {
+  const browser = await chromium.launch({ channel: 'chrome', headless: true, chromiumSandbox: true });
+  t.after(() => browser.close());
+  const context = await browser.newContext(); const page = await context.newPage();
+  await context.route('https://moodle.nottingham.ac.uk/**', route => route.fulfill({ contentType: 'text/html', body: `
+    <main id="region-main"><div class="course-content">
+      <section class="section"><h3 class="sectionname">Lecture Notes</h3><ul class="section"><li class="activity"><a href="/mod/resource/view.php?id=201">Notes File</a></li></ul></section>
+      <section data-for="section"><h3 data-for="section_title">Problem Sheets</h3><a href="/mod/folder/view.php?id=202">Exercises Folder</a></section>
+      <section class="section" aria-labelledby="exam-title"><h3 id="exam-title">Exam Papers</h3><a href="/mod/resource/view.php?id=203">Paper File</a></section>
+      <section class="section"><a href="/mod/resource/view.php?id=204">Unlabelled File</a></section>
+    </div></main>` }));
+  const backend = new BrowserBackend({ ...config(), setupConfirmed: true, courses: [{ id: 101, name: 'Example' }], requestIntervalMs: 0, timeoutMs: 1000 });
+  const internals = backend as unknown as { session: () => Promise<BrowserContext>; page: Page };
+  internals.session = async () => context; internals.page = page;
+  const resources = await backend.listResources(101);
+  assert.deepEqual(resources.map(r => r.sectionName), ['Lecture Notes', 'Problem Sheets', 'Exam Papers', undefined]);
+  assert.equal((await backend.listFiles(resources[0]!))[0]?.sectionName, 'Lecture Notes');
+});
+
 test('browser course listing handles pagination and a delayed hidden-course response', async () => {
   const browser = await chromium.launch({ channel: 'chrome', headless: true, chromiumSandbox: true });
   try {
