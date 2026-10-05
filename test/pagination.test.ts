@@ -10,7 +10,7 @@ test('resource discovery reads enclosing Moodle section titles without mixing se
   const context = await browser.newContext(); const page = await context.newPage();
   await context.route('https://moodle.nottingham.ac.uk/**', route => route.fulfill({ contentType: 'text/html', body: `
     <main id="region-main"><div class="course-content">
-      <section class="section"><h3 class="sectionname">Lecture Notes</h3><ul class="section"><li class="activity"><a href="/mod/resource/view.php?id=201">Notes File</a></li></ul></section>
+      <section class="section"><h2 data-for="section_title">Select section Collapse Expand<h3 class="sectionname">Lecture Notes</h3></h2><ul class="section"><li class="activity"><a href="/mod/resource/view.php?id=201">Notes File</a></li></ul></section>
       <section data-for="section"><h3 data-for="section_title">Problem Sheets</h3><a href="/mod/folder/view.php?id=202">Exercises Folder</a></section>
       <section class="section" aria-labelledby="exam-title"><h3 id="exam-title">Exam Papers</h3><a href="/mod/resource/view.php?id=203">Paper File</a></section>
       <section class="section"><a href="/mod/resource/view.php?id=204">Unlabelled File</a></section>

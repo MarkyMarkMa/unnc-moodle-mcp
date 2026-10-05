@@ -100,7 +100,7 @@ export class BrowserBackend implements Backend {
       while (section && !section.querySelector('.sectionname, .section-title, [data-for="section_title"]') && !section.hasAttribute('aria-labelledby')) {
         section = section.parentElement?.closest('.section, [data-for="section"]') ?? null;
       }
-      const heading = section?.querySelector('.sectionname, .section-title, [data-for="section_title"]');
+      const heading = section?.querySelector('.sectionname') ?? section?.querySelector('.section-title') ?? section?.querySelector('[data-for="section_title"]');
       const labelled = section?.getAttribute('aria-labelledby')?.split(/\s+/).map(id => document.getElementById(id)?.textContent ?? '').join(' ');
       const sectionName = (heading?.textContent || labelled || '').trim().replace(/\s+/g, ' ');
       return {

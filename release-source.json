@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "c45835759ff6bbfd0040b82f467e1ca7a981416e",
+  "sourceCommit": "516e65a96cb03423ca1402039b61a89edff310a9",
   "sourceSubdirectory": "moodle-mcp",
   "dirty": false,
   "finalCandidate": true,
@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "src/browser.ts",
-      "sha256": "b0f70fb0cac211ad873846796742f0952b597d81c2af842ab50df63a81ffad10",
+      "sha256": "7194fa61d618bea366ee8a32cc2f76e6449d79fa12f72b7663510c8dac051096",
       "mode": 420
     },
     {
@@ -88,7 +88,7 @@
     },
     {
       "path": "test/pagination.test.ts",
-      "sha256": "0adb65d664be7cc330ecaf57c2295cb5807ae33a66f6a31e47616f1ccdad01fb",
+      "sha256": "67063ac8ee78bfe52f724d9cd41f1a3482021053de7bb9dcc10ee274bca0f059",
       "mode": 420
     },
     {
