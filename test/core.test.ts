@@ -497,3 +497,13 @@ test('conflicting rules skip downloads; explicit assignments override keywords; 
   await assert.rejects(configureOrganization(service, { mode: 'existing', root: existing, rules: [{ courseId: 101, directory: 'Linked', keywords: ['x'] }] }));
   assert.equal((await service.check()).authenticated, true); // Failed writes release the shared lock.
 });
+
+test('service defaults to new files only while explicit full still checks updates', async t => {
+  const { cfg, backend } = await fixture(t);
+  const service = new MoodleService(cfg, () => backend);
+  const first = await service.sync(); assert.equal(first.added.length, 1);
+  const requests = backend.requests; backend.content.set(201, 'changed PDF');
+  const repeat = await service.sync();
+  assert.equal(backend.requests, requests); assert.equal(repeat.updated.length, 0); assert.equal(repeat.skipped.length, 1);
+  const full = await service.sync(false, 'full'); assert.equal(full.updated.length, 1);
+});

@@ -18,13 +18,25 @@ Setup offers recommended skill installation on both macOS and Windows. Press Ent
 
 | Mode | CLI command | MCP request | Behavior |
 |---|---|---|---|
-| Full | `npm run sync` | `sync_courses` with `mode: "full"` | Discover resources and check existing files for remote updates. |
-| Quick | `npm run sync:quick` | `sync_courses` with `mode: "quick"` | Download unrecorded resources; do not check remote content changes to recorded files. |
+| Full | `npm run sync -- --full` | `sync_courses` with `mode: "full"` | Discover resources and check existing files for remote updates. |
+| Quick (default) | `npm run sync` or `npm run sync:quick` | `sync_courses` with `mode: "quick"` | Download unrecorded resources; do not check remote content changes to recorded files. |
 | Organize | `npm run organize` | `sync_courses` with `mode: "organize"` | Refresh the local layout using downloaded materials; do not download files. |
 
 All modes maintain readable course and section folders. Quick and organize modes do not report remote deletion. Quick mode does not redownload damaged or missing history files, although intact history can rebuild a missing readable copy. Quick and organize modes cannot be combined with a forced content check.
 
 Synchronization is manual and uses serial, paced operations. Requests initiated by page subresources are not all covered by the same pacing interval. The per-file download limit is 100 MiB; response bodies are buffered.
+
+## Task progress and recovery
+
+`sync_courses` starts a manual task and returns `{started, task, lock}` immediately; it no longer waits for the batch summary. The task contains `taskId`, mode, timestamps and progress. Poll `get_sync_status` with that ID every 15–30 seconds; omit it to read the active/latest task. Progress reports the current course, resource, phase, retry attempt, discovered resource count, processed file count and summary counts. Counts are not a percentage: later courses have not yet been discovered. `awaitingProgress` means no progress update for 90 seconds, not proof of a deadlock.
+
+Terminal statuses are `completed`, `completed_with_errors`, `stopped`, `failed` and `interrupted`. Read `summary.failed`, `summary.skipped`, `summary.needsLogin` and `summary.stoppedReason`; completion alone does not establish that everything was downloaded. `resultSaved: false` or `persistenceError` means durable result storage failed. During final cleanup, the saved task may already be terminal while the lock is briefly active; wait for an idle lock before another operation.
+
+Task records and final summaries are written atomically to `_moodle/state/sync-jobs/TASK_ID.json`; `_moodle/state/sync-latest.json` points to the latest task. These are private local records, not course materials, and must not be published. Previous tasks are retained. The manifest format is unchanged. CLI sync still waits for its result and also saves it; `node dist/src/cli.js sync-status [TASK_ID]` reads progress without opening the browser.
+
+Repeated sync requests while an operation is active return `started: false` and its task/lock information. A live lock reports PID, operation, start time and task ID where available; legacy locks may lack the operation/task. Status queries do not take the browser lock. If the owner has exited, the task is reported as interrupted and the next operation recovers the stale lock, retaining materials and partial progress. PID reuse is handled conservatively: a live PID is never reclaimed by age. A migration marker, malformed lock or recovery guard is not deleted automatically. If `recoveryGuard: true` persists after a crash during recovery, stop all MCP/CLI processes and inspect `_moodle/state/operation-recovery.lock` before removing that guard only; do not delete the manifest or a live operation lock.
+
+A disconnected chat does not guarantee detached execution: work continues only while the MCP process survives. If the client terminates that process, query status after reconnecting, review interruption and start another manual quick sync. Completed file commits are retained. Interrupted tasks have partial counts; they do not have a fabricated successful final summary.
 
 ## Course selection
 
@@ -79,7 +91,8 @@ Absolute environment variables can override settings: `MOODLE_DATA_DIR`, `MOODLE
 | `confirm_setup` | Confirm the current storage directory and course list. |
 | `list_resources` | List resources in a selected course. |
 | `download_resource` | Download an observed file or folder resource. |
-| `sync_courses` | Run one full, quick, or organize operation. |
+| `sync_courses` | Start one quick (default), full, or organize task; poll status for the final result. |
+| `get_sync_status` | Read task progress, saved results and lock state without browser access. |
 
 Other CLI commands include `npm run settings`, `npm run login`, and `npm run doctor`. `npm run codex-config` prints an MCP configuration block without modifying global configuration.
 

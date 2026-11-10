@@ -9,6 +9,7 @@ import { approvedCourse, requireSetup, type Config } from './config.js';
 import { MoodleError, failure, atStage, type Backend, type Manifest, type RemoteFile, type StoredFile, type SyncSummary } from './model.js';
 import { fileHash, fileSlot, inside, privateDirectory, regularFile, removeStaging, safeDirectory, safeFilename } from './safety.js';
 
+import { summaryCounts, type ProgressReporter } from './jobs.js';
 import { publishLatest, pruneEmpty } from './layout.js';
 
 const versionSchema = z.object({ version: z.number().int().positive(), relativePath: z.string(), filename: z.string(), sha256: z.string().regex(/^[a-f0-9]{64}$/), bytes: z.number().int().nonnegative(), savedAt: z.string() });
@@ -136,7 +137,7 @@ export class SyncEngine {
     if (code !== 'NEEDS_LOGIN' && code !== 'RATE_LIMITED') return false;
     summary.stoppedReason = code; summary.needsLogin = code === 'NEEDS_LOGIN'; return true;
   }
-  async run(options: { courseIds?: number[]; moduleId?: number; force?: boolean; mode?: 'full' | 'quick' | 'organize' } = {}): Promise<SyncSummary> {
+  async run(options: { courseIds?: number[]; moduleId?: number; force?: boolean; mode?: 'full' | 'quick' | 'organize'; onProgress?: ProgressReporter; shouldStop?: () => boolean } = {}): Promise<SyncSummary> {
     requireSetup(this.cfg);
     if (options.mode !== undefined && options.mode !== 'full' && options.force) throw new MoodleError('INVALID_INPUT');
     const ids = options.courseIds ?? this.cfg.courses.map(c => c.id); ids.forEach(id => approvedCourse(id, this.cfg.courses));
@@ -144,7 +145,11 @@ export class SyncEngine {
     await privateDirectory(this.cfg.dataDir); await privateDirectory(this.cfg.stateDir); await privateDirectory(this.cfg.materialsDir);
     const state = await this.load();
     const summary: SyncSummary = { added: [], updated: [], unchanged: [], failed: [], skipped: [], remoteMissing: [], needsLogin: false };
+    let completedCourses = 0, discoveredResources = 0, processedFiles = 0;
+    const progress: ProgressReporter = async patch => { await options.onProgress?.({ completedCourses, discoveredResources, processedFiles, counts: summaryCounts(summary), ...patch }); };
     for (const courseId of ids) {
+      if (options.shouldStop?.()) return summary;
+      await progress({ stage: 'discovery', courseId, moduleId: undefined, title: undefined, key: undefined, attempt: undefined });
       let complete = options.moduleId === undefined && (options.mode === undefined || options.mode === 'full'); const seen = new Set<string>();
       try {
         let resources: Awaited<ReturnType<Backend['listResources']>>;
@@ -153,7 +158,11 @@ export class SyncEngine {
           resources = resources.filter(r => r.moduleId === options.moduleId);
           if (!resources.length) throw new MoodleError('NOT_FOUND');
         }
+        discoveredResources += resources.length;
+        await progress({});
         for (const resource of resources) {
+          if (options.shouldStop?.()) return summary;
+          await progress({ stage: 'listing', moduleId: resource.moduleId, title: resource.title, key: undefined, attempt: undefined });
           if (!['file', 'folder'].includes(resource.type)) {
             summary.skipped.push({ courseId, moduleId: resource.moduleId, title: resource.title, reason: resource.type === 'url' ? '外链资源仅报告，不自动跟随' : `不下载 ${resource.type} 类型` }); continue;
           }
@@ -164,6 +173,8 @@ export class SyncEngine {
             if (this.stop(f.code, summary)) return summary; continue;
           }
           for (const file of files) {
+            if (options.shouldStop?.()) return summary;
+            await progress({ stage: 'organize', key: file.key, title: file.title });
             seen.add(file.key);
             try {
               const route = routeFile(this.cfg, file, state.files[file.key]);
@@ -181,6 +192,7 @@ export class SyncEngine {
               if (options.mode === 'organize' || (options.mode === 'quick' && state.files[file.key])) {
                 summary.skipped.push({ courseId, moduleId: resource.moduleId, title: resource.title, reason: options.mode === 'organize' ? '仅整理本地资料：未下载或检查远端内容' : '快速模式：已有文件未检查远端内容更新' }); continue;
               }
+              await progress({ stage: 'download', attempt: 1 });
               await this.processFile(file, state, summary, options.force ?? false);
               const readable = await this.organize(file, state);
               if (readable) for (const list of [summary.added, summary.updated, summary.unchanged]) {
@@ -193,7 +205,7 @@ export class SyncEngine {
               summary.unchanged = summary.unchanged.filter(entry => entry.key !== file.key);
               complete = false; const f = failure(e, 'download'); summary.failed.push({ courseId, moduleId: resource.moduleId, key: file.key, ...f });
               if (this.stop(f.code, summary)) return summary;
-            }
+            } finally { processedFiles++; await progress({}); }
           }
         }
         if (complete) {
@@ -208,6 +220,7 @@ export class SyncEngine {
         const f = failure(e); summary.failed.push({ courseId, ...f });
         if (this.stop(f.code, summary)) break;
       }
+      completedCourses++; await progress({ stage: 'course_complete' });
     }
     return summary;
   }

@@ -20,9 +20,12 @@ export function migrateStorage(dataDir: string, moveCourses: boolean, saveSettin
   const management = join(dataDir, '_moodle');
   directory(management);
   const lock = join(dataDir, '.moodle-storage.lock');
-  if (stat(lock) || stat(join(dataDir, 'state', 'operation.lock')) || stat(join(management, 'state', 'operation.lock'))) throw new MoodleError('BUSY');
+  if (stat(lock)) throw new MoodleError('BUSY');
   const names = readdirSync(dataDir).filter(name => name === 'state' || (moveCourses && name === 'courses.json') || /^升级备份-\d{8}-\d{6}$/.test(name));
+  // An already migrated installation must start even with an active/stale
+  // operation: status queries need no browser. Only migration requires idle.
   if (!names.length) return;
+  if (stat(join(dataDir, 'state', 'operation.lock')) || stat(join(management, 'state', 'operation.lock'))) throw new MoodleError('BUSY');
   for (const name of names) {
     const source = stat(join(dataDir, name))!;
     if (source.isSymbolicLink() || (name === 'courses.json' ? !source.isFile() : !source.isDirectory())) throw new MoodleError('PATH_UNSAFE');

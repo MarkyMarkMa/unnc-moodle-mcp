@@ -29,9 +29,13 @@ description: 在 Codex 中设置和使用 UNNC Moodle 资料同步 MCP，包括�
 
 ## 日常同步
 
-回读设置与登录状态。设置已完成且名单非空时，按用户请求调用一次 `sync_courses`。用户要求快速或只下载新增时传 mode: quick；完整检查传 mode: full（默认）。快速模式的 skipped 是未检查旧文件，不能报告成“旧文件未变化”；提醒它不会发现远端旧文件替换，也不会重新下载损坏的本地历史文件；仍会维护可读目录。只整理目录时传 mode: organize，不下载课件。日常资料按英文课程名/Moodle 原始分区组织，历史在 materials/.history。新课程获批加入后，快速模式会下载它的所有未记录资料。部分失败只针对已发现的失败资源决定是否单独重试；下载已内置最多三次 NETWORK/PARSE_FAILED 尝试，预算耗尽后不要无限循环。
+回读设置与登录状态。设置已完成且名单非空时，按用户请求调用一次 `sync_courses`。日常同步默认只下载新增，传 mode: quick；仅用户明确要求检查旧文件更新时传 mode: full。快速模式的 skipped 是未检查旧文件，不能报告成“旧文件未变化”；提醒它不会发现远端旧文件替换，也不会重新下载损坏的本地历史文件；仍会维护可读目录。只整理目录时传 mode: organize，不下载课件。日常资料按英文课程名/Moodle 原始分区组织，历史在 materials/.history。新课程获批加入后，快速模式会下载它的所有未记录资料。部分失败只针对已发现的失败资源决定是否单独重试；下载已内置最多三次 NETWORK/PARSE_FAILED 尝试，预算耗尽后不要无限循环。
 
-检查业务摘要里的 failed、needsLogin、stoppedReason，MCP 调用成功不等于同步成功。429 停止当前批次，告知稍后手动重试，不立即再次同步。LOCAL_IO 先解决磁盘/权限，INTERNAL 或持续解析失败报告具体阶段与尝试次数，不猜根因。
+0.4.10 起 sync_courses 立即返回任务而非最终摘要。started: true 后记录 task.taskId，每 15–30 秒调用 get_sync_status 查询进度，直到 completed / completed_with_errors / stopped / failed / interrupted。started: false 表示已有操作：展示现有任务并查询，不重复启动、不清理活跃锁。任务未结束不能报告同步成功。旧 MCP 若无 get_sync_status，则按旧同步接口读取摘要。
+
+进度查询只读本地，不占浏览器锁；展示当前课程/资源、阶段、处理数量与重试次数，不猜总百分比。awaitingProgress 是长时间无更新，不等于死锁。查询结果里的 lock 显示持锁进程及操作。聊天恢复时先查询 get_sync_status；已有任务继续则等待，终态则读取保存摘要；interrupted 说明旧进程退出，已下载资料保留，按用户授权手动重开 quick，不自动反复重试。只有进程仍存活才继续执行，不承诺关闭客户端后仍独立运行。不要通过重复 check_connection 诊断正在运行的同步，因为它也需要浏览器锁。
+
+resultSaved: false 或 persistenceError 必须明确告知结果没有可靠保存。终态后如果 lock 仍短暂 active，等待清理；损坏状态和 recoveryGuard 不擅自删除。检查业务摘要里的 failed、needsLogin、stoppedReason，MCP 调用成功不等于同步成功。429 停止当前批次，告知稍后手动重试，不立即再次同步。LOCAL_IO 先解决磁盘/权限，INTERNAL 或持续解析失败报告具体阶段与尝试次数，不猜根因。
 
 报告新增、更新、未变化、失败和跳过的数量；明确本次真正新增的文件与已存在的文件。指出保存位置，必要时给 Finder 的 ⌘⇧G 操作。保留旧版本，不删除或移动用户文件。外链只报告，不携带学校凭据访问。此项目不提交作业、发消息或修改学校数据。
 

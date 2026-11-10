@@ -25,6 +25,9 @@ export function dispositionFilename(value: string | undefined): string | undefin
   const name = plain?.[1] ?? plain?.[2]; return name?.trim() ? safeFilename(name.trim()) : undefined;
 }
 export class BrowserBackend implements Backend {
+  private report?: import('./jobs.js').ProgressReporter;
+  setProgressReporter(reporter: import('./jobs.js').ProgressReporter) { this.report = reporter; }
+  private closed = false;
   private context?: BrowserContext;
   private page?: Page;
   private lastRequest = 0;
@@ -35,6 +38,7 @@ export class BrowserBackend implements Backend {
     this.lastRequest = Date.now();
   }
   private async session(): Promise<BrowserContext> {
+    if (this.closed) throw new MoodleError('INTERNAL');
     if (this.context) return this.context;
     await privateDirectory(this.cfg.profileDir);
     const sessionFile = join(this.cfg.profileDir, 'moodle-session.json');
@@ -311,6 +315,7 @@ export class BrowserBackend implements Backend {
   async download(file: RemoteFile, stagingDir: string, previous?: StoredFile, force = false): Promise<DownloadResult> {
     approvedCourse(file.courseId, this.cfg.courses); schoolUrl(file.url);
     for (let attempt = 0; attempt < 3; attempt++) {
+      await this.report?.({ stage: attempt ? 'retry' : 'download', attempt: attempt + 1 });
       try { return { ...await this.downloadOnce(file, stagingDir, previous, force), attempts: attempt + 1 }; }
       catch (e) {
         const error = atStage(e, 'download'); error.attempts = attempt + 1;
@@ -320,5 +325,5 @@ export class BrowserBackend implements Backend {
     }
     throw new MoodleError('NETWORK');
   }
-  async close(): Promise<void> { const ctx = this.context; this.context = undefined; this.page = undefined; await ctx?.close().catch(() => {}); }
+  async close(): Promise<void> { this.closed = true; const ctx = this.context; this.context = undefined; this.page = undefined; await ctx?.close().catch(() => {}); }
 }

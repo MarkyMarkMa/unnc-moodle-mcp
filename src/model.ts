@@ -63,6 +63,7 @@ export interface DownloadResult {
   sha256?: string; bytes?: number; mime?: string; etag?: string; lastModified?: string;
 }
 export interface Backend {
+  setProgressReporter?(reporter: import('./jobs.js').ProgressReporter): void;
   checkConnection(): Promise<{ connected: boolean; authenticated: boolean; needsLogin: boolean }>;
   listCourses(): Promise<Course[]>;
   listResources(courseId: number): Promise<Resource[]>;

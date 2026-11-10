@@ -14,10 +14,14 @@ test('official MCP client discovers tools and invokes actual server with validat
   const client = new Client({ name: 'moodle-test-client', version: '0.1.0' });
   try {
     await client.connect(transport); const list = await client.listTools();
-    assert.deepEqual(list.tools.map(t => t.name).sort(), ['login', 'configure_organization', 'confirm_setup', 'select_courses', 'check_connection', 'download_resource', 'get_sync_settings', 'list_courses', 'list_resources', 'sync_courses'].sort());
+    assert.deepEqual(list.tools.map(t => t.name).sort(), ['login', 'configure_organization', 'confirm_setup', 'select_courses', 'check_connection', 'download_resource', 'get_sync_settings', 'list_courses', 'list_resources', 'sync_courses', 'get_sync_status'].sort());
     const loginTool = list.tools.find(t => t.name === 'login')!;
     assert.equal(loginTool.annotations?.readOnlyHint, false);
     assert.equal(loginTool.annotations?.idempotentHint, false);
+    const idle = await client.callTool({ name: 'get_sync_status', arguments: {} });
+    assert.equal(idle.isError, undefined); assert.match(JSON.stringify(idle), /idle/);
+    const invalidTask = await client.callTool({ name: 'get_sync_status', arguments: { taskId: '../escape' } });
+    assert.equal(invalidTask.isError, true);
     const result = await client.callTool({ name: 'get_sync_settings', arguments: {} });
     assert.equal(result.isError, undefined); assert.match(JSON.stringify(result), /Other student course/);
     const organize = await client.callTool({ name: 'sync_courses', arguments: { mode: 'organize' } });
@@ -61,7 +65,7 @@ test('stdio startup migrates legacy storage and reports preserved confirmation w
   const client = new Client({ name: 'migration-test-client', version: '0.1.0' });
   try {
     await client.connect(new StdioClientTransport({ command: process.execPath, env, args: [fileURLToPath(new URL('../src/server.js', import.meta.url))] }));
-    assert.equal((await client.listTools()).tools.length, 10);
+    assert.equal((await client.listTools()).tools.length, 11);
     const response = await client.callTool({ name: 'get_sync_settings', arguments: {} });
     assert.equal(response.isError, undefined);
     const settings = JSON.parse((response.content as Array<{text:string}>)[0]!.text);
@@ -89,5 +93,48 @@ test('stdio login launches the dedicated script without leaking stdout and repor
     assert.deepEqual(JSON.parse((result.content as Array<{text:string}>)[0]!.text), { connected: true, authenticated: false, needsLogin: true });
     assert.equal(await readFile(marker, 'utf8'), profile);
     assert.equal((await client.callTool({ name: 'check_connection', arguments: {} })).isError, undefined);
+  } finally { await client.close(); }
+});
+
+test('stdio sync starts immediately, persists a terminal business result and supports later clients', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'moodle-job-client-')); t.after(() => rm(root, { recursive: true, force: true }));
+  const coursesFile = join(root, '_moodle', 'courses.json'); await mkdir(join(root, '_moodle'));
+  await writeFile(coursesFile, '[{"id":808,"name":"Synthetic course"}]');
+  const settings = join(root, 'settings.json');
+  await writeFile(settings, JSON.stringify({ schemaVersion: 1, confirmed: true, dataDir: root, coursesFile }));
+  const env = { ...Object.fromEntries(Object.entries(process.env).filter((x): x is [string, string] => x[1] !== undefined)), MOODLE_COURSES_FILE: coursesFile, MOODLE_DATA_DIR: root, MOODLE_SETTINGS_FILE: settings, MOODLE_PROFILE_DIR: root + '-missing-profile' };
+  const connect = async () => {
+    const c = new Client({ name: 'job-test', version: '1' });
+    await c.connect(new StdioClientTransport({ command: process.execPath, env, args: [fileURLToPath(new URL('../src/server.js', import.meta.url))] })); return c;
+  };
+  const decode = (r: Awaited<ReturnType<Client['callTool']>>) => JSON.parse((r.content as Array<{ text: string }>)[0]!.text);
+  let client = await connect();
+  let taskId: string;
+  try {
+    const started = decode(await client.callTool({ name: 'sync_courses', arguments: {} }));
+    assert.equal(started.started, true); assert.equal(started.task.mode, 'quick'); taskId = started.task.taskId;
+    let status = decode(await client.callTool({ name: 'get_sync_status', arguments: { taskId } }));
+    for (let i = 0; i < 100 && (status.task.status === 'running' || status.lock.state !== 'idle'); i++) { await new Promise(r => setTimeout(r, 10)); status = decode(await client.callTool({ name: 'get_sync_status', arguments: { taskId } })); }
+    assert.equal(status.task.status, 'stopped'); assert.equal(status.task.summary.stoppedReason, 'NEEDS_LOGIN');
+    assert.equal(status.task.summary.failed.length, 1); assert.equal(status.task.resultSaved, true); assert.equal(status.lock.state, 'idle');
+  } finally { await client.close(); }
+  client = await connect();
+  try { const status = decode(await client.callTool({ name: 'get_sync_status', arguments: { taskId: taskId! } })); assert.equal(status.task.status, 'stopped'); assert.equal(status.task.summary.needsLogin, true); }
+  finally { await client.close(); }
+});
+
+test('stdio reconnect can query a live operation and repeated sync reports its owner', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'moodle-live-client-')); t.after(() => rm(root, { recursive: true, force: true }));
+  const state = join(root, '_moodle', 'state'); await mkdir(state, { recursive: true });
+  const coursesFile = join(root, '_moodle', 'courses.json'); await writeFile(coursesFile, '[{"id":808,"name":"Synthetic"}]');
+  const settings = join(root, 'settings.json'); await writeFile(settings, JSON.stringify({ schemaVersion: 1, confirmed: true, dataDir: root, coursesFile }));
+  await writeFile(join(state, 'operation.lock'), JSON.stringify({ pid: process.pid, token: 'live-parent', startedAt: new Date().toISOString(), operation: 'synthetic-operation' }));
+  const env = { ...Object.fromEntries(Object.entries(process.env).filter((x): x is [string, string] => x[1] !== undefined)), MOODLE_COURSES_FILE: coursesFile, MOODLE_DATA_DIR: root, MOODLE_SETTINGS_FILE: settings };
+  const client = new Client({ name: 'live-lock-client', version: '1' });
+  try {
+    await client.connect(new StdioClientTransport({ command: process.execPath, env, args: [fileURLToPath(new URL('../src/server.js', import.meta.url))] }));
+    const status = await client.callTool({ name: 'get_sync_status', arguments: {} }); assert.equal(status.isError, undefined); assert.match(JSON.stringify(status), /synthetic-operation/);
+    const sync = await client.callTool({ name: 'sync_courses', arguments: {} }); assert.equal(sync.isError, undefined); assert.match(JSON.stringify(sync), /started\\":false/);
+    const check = await client.callTool({ name: 'check_connection', arguments: {} }); assert.equal(check.isError, true); assert.match(JSON.stringify(check), /BUSY/); assert.match(JSON.stringify(check), /synthetic-operation/);
   } finally { await client.close(); }
 });

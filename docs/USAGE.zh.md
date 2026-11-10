@@ -100,13 +100,13 @@ macOS 和 Windows 升级到 0.4.5 前均须停止所有旧 MCP/CLI 进程。新�
 
 ## 快速同步与新增课程（0.4.0）
 
-日常只找新增资料：`npm run sync:quick`，或对 Codex 说“快速同步 Moodle 课件”。MCP 调用 `sync_courses` 的 `mode: "quick"`；默认仍为 `full`，完整检查用 `npm run sync`。
+日常只找新增资料：`npm run sync:quick`，或对 Codex 说“快速同步 Moodle 课件”。MCP 调用 `sync_courses` 的 `mode: "quick"`；默认使用 `quick`；`npm run sync` 同样只下载新增。完整检查用 `npm run sync -- --full` 或 MCP `mode: "full"`。
 
 快速模式读取已选课程列表，只下载 manifest 中没有记录的模块/文件，不请求旧文件的 ETag；维护可读目录时会读取本地文件并校验内容。已存在文件列入 skipped，不能说它们已经验证未变化。文件夹仍需读取其列表，以发现新文件及重试上次部分失败；已有文件内容不检查。快速模式不报告远端删除；历史文件完整时可以重建丢失的可读入口，但不重新下载丢失/损坏的历史文件；检查这些问题请运行完整模式。`--quick` / `--organize` 与 `--force` 不可同时使用。
 
 第四门课或下学期课程：先 `npm run courses` 或调用 `list_courses` 查看真实课程，用户确认后执行 `npm run add -- COURSE_ID ...`，或 MCP `select_courses` 传 `mode: "add"`。它保留原名单，拒绝未发现ID。新课没有记录的资料将在下一次快速同步中全部下载。CLI添加后重启已运行MCP；MCP添加立即对当前进程生效。首次设置尚未确认时仍必须确认目录。
 
-新发现课程不会未经用户批准自动下载：Codex展示未选择候选课程，经用户选择后添加。老师只是在已有课程新增课件模块时，不需重新批准课程。完整模式建议按需要定期运行，以发现旧课件替换。
+新发现课程不会未经用户批准自动下载：Codex展示未选择候选课程，经用户选择后添加。老师只是在已有课程新增课件模块时，不需重新批准课程。只有需要检查旧课件替换时才显式运行完整模式；日常更新使用 quick。
 
 ## 同步结果与可靠性
 
@@ -150,3 +150,16 @@ configure_organization 必须传 confirmed: true。自动模式 organization: { 
 单文件的可读文件名使用 Moodle 标题及下载文件的扩展名；文件夹资源保留子文件名和内部结构。标题没有说明题目/解析时不猜测，仍需用户确认。关键词匹配标题、可用活动描述、栏目和文件名中不区分大小写的字面片段，不是 PDF 内容分类。配置前及保存后读取 get_sync_settings.organization，不把分类 skipped 说成同步完整成功。
 
 升级前停止旧进程，升级后重连 MCP。请求 organize 仅整理已有且未修改的 tracked 副本，无需重新下载；批注副本独立保留。设置后可以在 Codex 中配置规则，向导本身不下载或推断分类。
+
+
+## 同步任务、进度与恢复（0.4.10）
+
+`sync_courses` 立即返回 `{started, task, lock}`，不再等待整批结束。默认 quick；显式 `mode: "full"` 才检查旧文件更新。按 `task.taskId` 每 15–30 秒查询 `get_sync_status`；不传 taskId 则读取正在运行或最近的任务。进度包括当前课程/资源、阶段、重试次数、发现资源数、处理文件数和摘要计数；后续课程尚未发现时不能把计数当完成百分比。`awaitingProgress` 仅表示 90 秒没有进度更新，不证明死锁。
+
+终态为 completed、completed_with_errors、stopped、failed、interrupted。必须检查 summary.failed、skipped、needsLogin 和 stoppedReason，不将“终态”当作全部下载成功。`resultSaved: false` 或 persistenceError 表示结果持久保存失败。最终清理时任务可能已保存终态而锁短暂存在，等锁 idle 后再操作。
+
+进度及最终摘要原子保存到 `_moodle/state/sync-jobs/TASK_ID.json`，`sync-latest.json` 指向最近任务；历史任务保留。它们包含私人路径及资源信息，不公开。原 manifest 格式不变。CLI 同步仍等待完成并保存结果；`node dist/src/cli.js sync-status [TASK_ID]` 不打开浏览器即可查询。
+
+重复发起返回 started: false 及当前任务/锁，不另开同步。锁显示 PID、操作、开始时间和可用的 taskId；旧版锁可能没有操作和任务编号。进度查询不占浏览器锁。持锁进程确认退出时，任务显示 interrupted，下次操作恢复残留锁，保留已完成的课件及部分计数。活跃 PID 不按时间回收；PID 复用时保守保留。迁移标记、损坏锁和恢复保护锁不自动删除。如果崩溃发生在恢复期间且 recoveryGuard 持续为 true，停止全部 MCP/CLI 后检查 `_moodle/state/operation-recovery.lock`，确认没有恢复操作后仅移除该保护锁；不删 manifest 或活跃操作锁。
+
+聊天断开不保证后台独立运行：MCP 进程还活着才继续。客户端若终止进程，重连后查询中断状态，再手动发起 quick；已完成的逐文件提交保留，不伪造整批成功摘要。程序更新后重连才能加载新接口；旧独立 skill 不自动替换，应对照新版技能更新默认模式及轮询流程。

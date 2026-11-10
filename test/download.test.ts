@@ -82,3 +82,8 @@ test('authentication, permission and rate limit failures are not retried', async
     assert.equal(calls, 1);
   }
 });
+
+test('a closed backend cannot reopen the browser during a shutdown retry', async () => {
+  const b = new BrowserBackend(config());
+  await b.close(); await assert.rejects(b.checkConnection(), (e: unknown) => e instanceof MoodleError && e.code === 'INTERNAL');
+});

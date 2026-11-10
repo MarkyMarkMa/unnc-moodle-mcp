@@ -147,7 +147,7 @@ export async function update(target, { fetcher = fetch, run = execFileSync, log 
     finally { await unlockData(); }
     log(`Updated to ${next.version}. Previous program backup: ${backup}`);
     log('Reconnect the Moodle MCP or restart Codex. Then ask Codex to check login/settings and organize existing materials without downloading them.');
-    log('Your separately installed Codex skill is unchanged; the existing sync tools remain compatible.');
+    log('Your separately installed Codex skill is unchanged. sync_courses now returns a task; poll get_sync_status for the final summary. Review the supplied skill if your installed workflow expects the old result.');
     return { updated: true, version: next.version, backup };
   } finally { await rm(lock, { recursive: true }); }
 }

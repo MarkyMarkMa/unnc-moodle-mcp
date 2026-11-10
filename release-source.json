@@ -1,19 +1,34 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "f40341b83f3cbb74962980cfa4b24506892f9ecb",
+  "sourceCommit": "2ad1d1610ecef27c15f4358c494f56a51b31e918",
   "sourceSubdirectory": "moodle-mcp",
   "dirty": false,
   "finalCandidate": true,
   "gitStatus": [],
   "files": [
     {
+      "path": "src/operation.ts",
+      "sha256": "628d5b920861f6be95773f1c3a9f95fed0bf6290bb9f786868a31886cf061de9",
+      "mode": 420
+    },
+    {
+      "path": "src/jobs.ts",
+      "sha256": "f2ea86b21b060d94a3401274fbdd39c15c61cb3ca6000daa52ebe7786ed0fb40",
+      "mode": 420
+    },
+    {
+      "path": "test/jobs.test.ts",
+      "sha256": "fa96785dc0681e965ab3c044290614168467af45402f6b9238aadcd234246ebc",
+      "mode": 420
+    },
+    {
       "path": "src/browser.ts",
-      "sha256": "bc3231d08939c7cc22ea3e9e9574ba0ae9c0fdee19321e642cd982351ad4e8d6",
+      "sha256": "1669ac3d7d92afdeba9076d25529ac38866763b2ab6e15e309552d81eeb4c1b0",
       "mode": 420
     },
     {
       "path": "src/cli.ts",
-      "sha256": "33edf8065fec6681fe159559ee3dc4a6ef85eebb5dc633959a63cbddcf76f975",
+      "sha256": "0d531227379eafae9538264f9f55e3c810cc642b3ade70a7acf0976bbe73f9ca",
       "mode": 420
     },
     {
@@ -23,7 +38,7 @@
     },
     {
       "path": "src/model.ts",
-      "sha256": "182cac9c05dca20cd2b1ad6140ff90bc95acb3830c7b3a17b3470588ee769c62",
+      "sha256": "32e92fee41636d4404ff211fd6985ec02006c3ad8ce0349c0013a48165384871",
       "mode": 420
     },
     {
@@ -48,22 +63,22 @@
     },
     {
       "path": "src/server.ts",
-      "sha256": "bc943775f15058859a9f277bf9d02be7a21f0a265542a94c049b58ff13acc61e",
+      "sha256": "a7273fb53cf70d9c40b6b40353ad011af4a14701aafeff5eef22638caf0d9898",
       "mode": 420
     },
     {
       "path": "src/service.ts",
-      "sha256": "8ddd3cef62951d28c082aceb0c20586b0707e5e8617180a080c63da4b4958d04",
+      "sha256": "61e6aeccd288a58009dc41088df5403972d571794db69fe59a4af0d39c9962c5",
       "mode": 420
     },
     {
       "path": "src/sync.ts",
-      "sha256": "584023d5106faf18c4c68ceec8f45dc36946f7fc126681e50860d97eb052d758",
+      "sha256": "ac0e99e0f6e72caa54e70fd468d09adab969db48d8d04bbdc983f0a8a7f10bfc",
       "mode": 420
     },
     {
       "path": "src/storage.ts",
-      "sha256": "96aba9f3ec01e2fce210216fef6e23b28e0a95ee0dba1d675861ff79a1064c77",
+      "sha256": "f04d4995e25f852a23c973b39b7afdb31b819753b65a580229a8846d70a3b5da",
       "mode": 420
     },
     {
@@ -73,7 +88,7 @@
     },
     {
       "path": "src/setup.ts",
-      "sha256": "b8feec861307b4169c1e9f20ea6f01919b465052959305cf865b040a7e727286",
+      "sha256": "1cefed41f480f7774f610df6bb67b73cfb673e9a29c91ed033887c6b39c7a006",
       "mode": 420
     },
     {
@@ -98,12 +113,12 @@
     },
     {
       "path": "test/core.test.ts",
-      "sha256": "4a34a921688a19b6a3991ac69bbce1d485c073ccc12cfbf661b3ec27075c981c",
+      "sha256": "aa1f30946b5f07f24f5bed9011a86653dd8f09dc545cd1831d42f9f3587871ac",
       "mode": 420
     },
     {
       "path": "test/download.test.ts",
-      "sha256": "309875a17a92d0adfc289859e1f9cc5bb02b67ae17c7099424e55cde01e19427",
+      "sha256": "07a54305b88fc3aa554301ec32542c2494bf8da703ee9716cacbd18da06edac5",
       "mode": 420
     },
     {
@@ -113,7 +128,7 @@
     },
     {
       "path": "test/mcp.test.ts",
-      "sha256": "296a9f59ef5801ff06acb611008f6fe25baa6f94496e868fe2f9be210da8836a",
+      "sha256": "486be6f98494f35425b4d8e0820dfc64ca10c2ef1185ec72be61f2fe493abde5",
       "mode": 420
     },
     {
@@ -143,7 +158,7 @@
     },
     {
       "path": "scripts/update.mjs",
-      "sha256": "0eebfc88da57e98a790818e79d0120a514a1328583bd980561fe866eb090428c",
+      "sha256": "a75d51a9e29c15ac8f36066608f852280f1c0729be225d52c2cb4f2658249da5",
       "mode": 420
     },
     {
@@ -153,7 +168,7 @@
     },
     {
       "path": "scripts/export-public.mjs",
-      "sha256": "1cb50263c0297ac04de3e6ed431f24f52068d94618d06e9af526077f91d4ae72",
+      "sha256": "3775c1d75819f365e2f2fab5e99631084b6852d99b1fb7446f57d6a52eec9856",
       "mode": 420
     },
     {
@@ -173,42 +188,42 @@
     },
     {
       "path": "docs/README.zh.md",
-      "sha256": "6424e5a6a9832ab1ae71031f563220b34387c48be6524a66dd85aa01cd2ce05f",
+      "sha256": "c3f51dcf46a88261c637a11aa5839be382659acf1aec93aeb3582f9202f3932a",
       "mode": 420
     },
     {
       "path": "docs/USAGE.md",
-      "sha256": "a10306b7cdaf4c08664e0029b996af43f5be9a495e6a0cf08f0424cd48b7666a",
+      "sha256": "73b2e3548818cd05361ccf726363e92dea2b74d65805df0cf7c7eafefdee1b31",
       "mode": 420
     },
     {
       "path": "docs/USAGE.zh.md",
-      "sha256": "a3ffe7546f8bf09505fbb1b3daaa60e6c1939f67139533d35ec83bf6410c34bb",
+      "sha256": "81b59357221335f8147a3f32a17f92f0007ccec51ceaa319cbe5fc813cd4fb86",
       "mode": 420
     },
     {
       "path": "docs/RELEASE.md",
-      "sha256": "dd26779e7caf293f16bd130758fb38bc7f7119b082681023536f34faa447b414",
+      "sha256": "0646e9f2c07882261d54b03e09d493b6f56a2935676f594a399bdcace3ee4e34",
       "mode": 420
     },
     {
       "path": "docs/TESTING.md",
-      "sha256": "513479d80c42a15040ac955055e1601539753d427a27b0d480203016e3db868a",
+      "sha256": "a200df85331a29d2458dbbde898d0a835c647dbbd39c2626956b4f7e709fab5e",
       "mode": 420
     },
     {
       "path": "skills/unnc-moodle/SKILL.md",
-      "sha256": "e75dfa13daf10a98ebe5f9cfd0511897a7f368cfa3e1524cbb63f8b56a7c0a3f",
+      "sha256": "a09f52436b73b67ee69dd2a6e3e82212689fe73fd1b5047a4e2acf36784eee78",
       "mode": 420
     },
     {
       "path": "package.json",
-      "sha256": "9d2ea2447ae271c8d66b2ba7c986c6346b716ed45044279e0236f88b3b93c283",
+      "sha256": "fbf695878e239a8e5798c308ef9cfa4e1973cfffae069367a025c05b8211e20b",
       "mode": 420
     },
     {
       "path": "package-lock.json",
-      "sha256": "1e9994215b1531fe7b2a48203b17035056f9e1b87f8a07ab4272efe6584c7f1e",
+      "sha256": "16b64026314212464ac9bf48c2637d3525cdb190af329d6ba576bfb34841178e",
       "mode": 420
     },
     {
@@ -218,7 +233,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "2065f8013085c55f8c5db70beadb5c638cb97ebda55a3f145d152d5fd1896afd",
+      "sha256": "815c1ea672947cb7319f824642e8b896b14fd3fab82a76849a34077e02b9ef5f",
       "mode": 420
     },
     {

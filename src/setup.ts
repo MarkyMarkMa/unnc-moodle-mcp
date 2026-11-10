@@ -3,7 +3,7 @@ import { constants } from 'node:fs';
 import { open, rename, unlink } from 'node:fs/promises';
 import { dirname, basename, resolve, isAbsolute } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { MoodleService } from './service.js';
+import type { MoodleService } from './service.js';
 import { MoodleError } from './model.js';
 import { privateDirectory, regularFile } from './safety.js';
 
@@ -29,7 +29,7 @@ export async function selectCourses(service: MoodleService, ids: number[], mode:
     await writePrivateJson(service.cfg.coursesFile, selected);
     service.cfg.courses = selected;
     return { selectedCourses: selected, restartMcpRequired: false, historicalFilesRetained: true };
-  });
+  }, 'select_courses');
 }
 export async function confirmSetup(service: MoodleService, dataDir: string): Promise<unknown> {
   if (!isAbsolute(dataDir) || resolve(dataDir) !== resolve(service.cfg.dataDir) || !service.cfg.courses.length) throw new MoodleError('INVALID_INPUT');
@@ -37,7 +37,7 @@ export async function confirmSetup(service: MoodleService, dataDir: string): Pro
     await writePrivateJson(service.cfg.settingsFile, { schemaVersion: 1, confirmed: true, dataDir: resolve(service.cfg.dataDir), coursesFile: resolve(service.cfg.coursesFile) });
     service.cfg.setupConfirmed = true;
     return service.status();
-  });
+  }, 'confirm_setup');
 }
 
 export async function configureOrganization(service: MoodleService, value: Routing): Promise<unknown> {
@@ -55,5 +55,5 @@ export async function configureOrganization(service: MoodleService, value: Routi
     await writePrivateJson(resolve(service.cfg.dataDir, '_moodle', 'routing.json'), routing);
     service.cfg.routing = routing;
     return { organization: routing, restartMcpRequired: false, existingFilesRetained: true, automaticMigration: false };
-  });
+  }, 'configure_organization');
 }
